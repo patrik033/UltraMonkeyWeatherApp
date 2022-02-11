@@ -24,25 +24,54 @@ namespace UltraMonkeyLibrary
                 {
                     var splitedLine = line.Split(',');
                     splitedLine[2].Trim();
+                    splitedLine[1].Trim();
                     CheckForBadCharacters(splitedLine);
                     splitedLine[2].Trim();
                     AddToClass(uniques, splitedLine);
                 }
             }
-            //using (var context = new UltraMonkeyContext())
-            //{
-            //    context.WeatherDatas.AddRange(uniques);
-            //    context.SaveChanges();
-            //}
 
+            //ta ut inne & ute med samma tid,
+            //ta ut nästa tid med inne o ute
+
+
+            using (var context = new UltraMonkeyContext())
+            {
+                context.WeatherDatas.AddRange(uniques);
+                context.SaveChanges();
+            }
+
+            //AddToFile(uniques);
+
+            Console.WriteLine("klar");
+            Console.ReadLine();
+        }
+
+        private static void RemoveDuplicated(List<WeatherData> uniques)
+        {
+            for (int i = 0; i < uniques.Count; i++)
+            {
+                for (int j = i + 1; j < uniques.Count; j++)
+                {
+                    if (uniques[i].Location.ToLower().Contains("inne") == uniques[j].Location.ToLower().Contains("inne"))
+                        uniques.RemoveAt(j);
+                    if (uniques[i].Location.ToLower().Contains("ute") == uniques[j].Location.ToLower().Contains("ute"))
+                        uniques.RemoveAt(j);
+                   
+                    
+                    else
+                        break;
+                }
+            }
+        }
+
+        private static void AddToFile(List<WeatherData> uniques)
+        {
             using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
             }
-
-            Console.WriteLine("klar");
-            Console.ReadLine();
         }
 
         private static void AddToClass(List<WeatherData> uniques, string[] splitedLine)
@@ -52,15 +81,15 @@ namespace UltraMonkeyLibrary
             var location = splitedLine[1];
             float temp = float.Parse(splitedLine[2]);
             var humid = int.Parse(splitedLine[3]);
-
-            
+            int moldIndex = CalculateMoldIndex(temp, humid);
 
             var myData = new WeatherData
             {
                 Date = dates,
                 Location = location,
                 Temp = temp,
-                AirMoisture = humid
+                AirMoisture = humid,
+                MoldIndex = moldIndex
             };
             uniques.Add(myData);
         }
@@ -94,20 +123,19 @@ namespace UltraMonkeyLibrary
             }
         }
 
-        private void CalculateMoldIndex(float temp, int humidity)
+        private static int CalculateMoldIndex(float temp, int humidity)
         {
-            List<double> squares = new List<double>();
+            int value = 0;
 
-
-            double sq = Math.Round(Math.Sqrt((Math.Pow(temp * 2, 2) + Math.Pow(humidity * 2, 2) + 70) - (0.092 * temp) + (1.092 * humidity)), 3);
-            squares.Add(sq);
-
-            Console.WriteLine("\n\n");
-            //squares.Sort();
-            foreach (var item in squares)
-            {
-                Console.WriteLine(Math.Round(item, 3));
-            }
+            if (humidity > 90 && humidity <= 100 && temp >= 10 && temp <= 50)
+                value = 3;
+            if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
+                value = 2;
+            if (humidity >= 73 && humidity <= 80 && temp >= 10 && temp <= 50)
+                value = 1;
+            if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
+                value = 0;
+            return value;
         }
     }
 }
