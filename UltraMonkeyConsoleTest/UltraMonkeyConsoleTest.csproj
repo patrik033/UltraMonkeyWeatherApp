@@ -9,10 +9,14 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="27.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UltraMonkeyEFLibrary\UltraMonkeyEFLibrary.csproj" />
+    <ProjectReference Include="..\UltraMonkeyLibrary\UltraMonkeyLibrary.csproj" />
   </ItemGroup>
 
 </Project>
