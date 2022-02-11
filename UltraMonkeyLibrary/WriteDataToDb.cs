@@ -16,7 +16,7 @@ namespace UltraMonkeyLibrary
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(@"C:\Users\zn_19\Documents\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
