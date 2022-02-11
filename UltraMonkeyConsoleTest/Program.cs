@@ -16,7 +16,7 @@ void WriteToEF()
 }
 
 
-AVGtemp();
+//AVGtemp();
 
 void AVGtemp()
 {
