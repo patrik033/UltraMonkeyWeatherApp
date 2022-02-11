@@ -67,7 +67,7 @@ namespace UltraMonkeyLibrary
 
         private static void AddToFile(List<WeatherData> uniques)
         {
-            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
+            using (var writer = new StreamWriter(@"C:\Users\zn_19\Documents\Temptest.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
