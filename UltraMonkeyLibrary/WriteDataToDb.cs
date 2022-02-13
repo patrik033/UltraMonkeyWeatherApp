@@ -16,7 +16,7 @@ namespace UltraMonkeyLibrary
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData1.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -31,38 +31,151 @@ namespace UltraMonkeyLibrary
                 }
             }
 
-            //ta ut inne & ute med samma tid,
-            //ta ut nästa tid med inne o ute
+            //Visar varmast/kallast dag basserat på plats
+            List<string> list = new List<string>();
+            list = OrderTemps(uniques, true, "Ute");
 
+            foreach (var item in list)
+            {
+                Console.WriteLine(item);
+            }
 
-            //using (var context = new UltraMonkeyContext())
-            //{
-            //    context.WeatherDatas.AddRange(uniques);
-            //    context.SaveChanges();
-            //}
+            //datum för meterologisk höst
+            List<WeatherData> autumnList = new List<WeatherData>();
 
-            AddToFile(uniques);
+            string finalValue = LoopForAutumn(uniques, autumnList);
+            Console.WriteLine(finalValue);
+            
+
+            //SaveToDb(uniques);
+
+            //AddToFile(uniques);
 
             Console.WriteLine("klar");
             Console.ReadLine();
         }
 
-        private static void RemoveDuplicated(List<WeatherData> uniques)
+        private string LoopForAutumn(List<WeatherData> uniques, List<WeatherData> autumnList)
         {
-            for (int i = 0; i < uniques.Count; i++)
+            int temp = 0;
+            string returnValue = "";
+            bool keepRunning = true;
+            List<WeatherData> list = new List<WeatherData>();
+            list = FirstDayForAutumn(uniques, list, temp);
+            while (keepRunning)
             {
-                for (int j = i + 1; j < uniques.Count; j++)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    if (uniques[i].Location.ToLower().Contains("inne") == uniques[j].Location.ToLower().Contains("inne"))
-                        uniques.RemoveAt(j);
-                    if (uniques[i].Location.ToLower().Contains("ute") == uniques[j].Location.ToLower().Contains("ute"))
-                        uniques.RemoveAt(j);
-                   
-                    
-                    else
+                    if (list[i].Temp > 0 && list[i].Temp < 10 && list[0].Temp > list[1].Temp && list[1].Temp > list[2].Temp && list[2].Temp > list[3].Temp && list[3].Temp > list[4].Temp)
+                    {
+                        returnValue = $"Första höstdagen inföll den: {list[0].Date.ToString()}";
+                        keepRunning = false;
                         break;
+                    }
+                    else
+                    {
+                        list.Clear();
+                        temp++;
+                        list = FirstDayForAutumn(uniques, list, temp);
+                    }
                 }
             }
+            return returnValue;
+        }
+
+        private static void SaveToDb(List<WeatherData> uniques)
+        {
+            using (var context = new UltraMonkeyContext())
+            {
+                context.WeatherDatas.AddRange(uniques);
+                context.SaveChanges();
+            }
+        }
+
+
+
+        //TODO make it talk to the database instead of a list
+        private List<string> OrderTemps(List<WeatherData> uniques, bool orderBy, string roomType)
+        {
+            List<string> temp = new List<string>();
+            string items = "";
+            if (orderBy)
+            {
+                return OrderByTemp(uniques, roomType, temp, ref items);
+            }
+            else
+            {
+                return OrderByDescendingTemp(uniques, roomType, temp, ref items);
+            }
+        }
+
+        private static List<string> OrderByDescendingTemp(List<WeatherData> uniques, string roomType, List<string> temp, ref string items)
+        {
+            var newList = uniques.GroupBy(x => new
+            {
+                x.Date.Date,
+                x.Location
+            }).Select(g => new
+            {
+                Date = g.Key,
+                AVG = g.Average(x => x.Temp),
+                Loc = g.Key.Location
+            }).Where(x => x.Loc == roomType).OrderByDescending(x => x.AVG);
+            foreach (var item in newList)
+            {
+                items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {item.AVG}";
+                temp.Add(items);
+            }
+            return temp;
+        }
+
+        private static List<string> OrderByTemp(List<WeatherData> uniques, string roomType, List<string> temp, ref string items)
+        {
+            var newList = uniques.GroupBy(x => new
+            {
+                x.Date.Date,
+                x.Location
+            }).Select(g => new
+            {
+                Date = g.Key,
+                AVG = g.Average(x => x.Temp),
+                Loc = g.Key.Location
+
+            }).Where(x => x.Loc == roomType).OrderBy(x => x.Date.Date);
+            foreach (var item in newList)
+            {
+                items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.Loc} Average: {Math.Round(item.AVG, 1)}";
+                temp.Add(items);
+            }
+            return temp;
+        }
+
+
+        private static List<WeatherData> FirstDayForAutumn(List<WeatherData> uniques, List<WeatherData> temp, int skip)
+        {
+            List<WeatherData> temps = new List<WeatherData>();
+            var newList = uniques.GroupBy(x => new
+            {
+                x.Date.Date,
+                x.Location
+            }).Select(g => new
+            {
+                Date = g.Key,
+                AVG = g.Average(x => x.Temp),
+                Loc = g.Key.Location
+
+            }).Where(x => x.Loc == "Ute").OrderBy(x => x.Date.Date).Skip(skip).Take(5);
+            foreach (var item in newList)
+            {
+                WeatherData Rubin = new WeatherData()
+                {
+                    Date = item.Date.Date,
+                    Location = item.Loc,
+                    Temp = item.AVG
+                };
+                temps.Add(Rubin);
+            }
+            return temps;
         }
 
         private static void AddToFile(List<WeatherData> uniques)
@@ -106,21 +219,15 @@ namespace UltraMonkeyLibrary
                 splitedLine[2] = splitedLine[2].Replace('−', '-');
             }
 
-            float myTemp = float.Parse(splitedLine[2]);
-
-
-
-
-            if (splitedLine[2].Contains('^') || splitedLine[2].Contains('’') || splitedLine[2].Contains('â'))
+            for (int i = 0; i < splitedLine[2].Length; i++)
             {
-                for (int i = 0; i < splitedLine[2].Length; i++)
+                if (char.IsDigit(splitedLine[2][i]))
                 {
-                    if (char.IsDigit(splitedLine[2][i]))
-                    {
-                        splitedLine[2] = splitedLine[2].Substring(i);
-                    }
+                    splitedLine[2] = splitedLine[2].Substring(i);
+                    break;
                 }
             }
+            float myTemp = float.Parse(splitedLine[2]);
         }
 
         private static int CalculateMoldIndex(float temp, int humidity)

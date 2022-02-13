@@ -12,8 +12,14 @@ namespace UltraMonkeyEFLibrary
         public DateTime Date { get; set; }
         public string Location { get; set; }
         public float Temp { get; set; }
-        public int AirMoisture { get; set; }
+        public int? AirMoisture { get; set; }
         public int? MoldIndex { get; set; }
         public int? OpenTime { get; set; }
+
+
+        public override string ToString()
+        {
+            return $"{Date.Year}-{Date.Month}-{Date.Day} {Location} {Temp}";
+        }
     }
 }
