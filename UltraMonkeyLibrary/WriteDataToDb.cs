@@ -11,12 +11,12 @@ namespace UltraMonkeyLibrary
 {
     public class WriteDataToDb
     {
-        public async void WriteToDb()
+        public async Task WriteToDb()
         {
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData1.csv"))
+            string path = @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData1.csv";
+            using (StreamReader sr = new StreamReader(path))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -31,36 +31,35 @@ namespace UltraMonkeyLibrary
                 }
             }
 
-            //Visar varmast/ kallast dag basserat på plats
-          
+            await SaveToDb(uniques);
 
-            //datum för meterologisk höst
-            
-
-
-            //SaveToDb(uniques);
-
-            //AddToFile(uniques);
+            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
 
             Console.WriteLine("klar");
             Console.ReadLine();
         }
 
-        
 
-        private void SaveToDb(List<WeatherData> uniques)
+
+        private async Task SaveToDb(List<WeatherData> uniques)
         {
             using (var context = new UltraMonkeyContext())
             {
-                context.WeatherDatas.AddRange(uniques);
-                context.SaveChanges();
+                if (context.Database.CanConnect())
+                    return;
+                else
+                {
+                    Console.WriteLine("Creating");
+                    context.WeatherDatas.AddRange(uniques);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
 
-        private void AddToFile(List<WeatherData> uniques)
+        private void AddToFile(List<WeatherData> uniques, string path)
         {
-            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
+            using (var writer = new StreamWriter(path))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
