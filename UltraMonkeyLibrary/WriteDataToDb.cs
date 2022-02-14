@@ -32,19 +32,10 @@ namespace UltraMonkeyLibrary
             }
 
             //Visar varmast/ kallast dag basserat på plats
-            List<string> list = new List<string>();
-            list = OrderTemps(uniques, true, "Inne");
-
-            foreach (var item in list)
-            {
-                Console.WriteLine(item);
-            }
+          
 
             //datum för meterologisk höst
-            List<WeatherData> autumnList = new List<WeatherData>();
-
-            string finalValue = await LoopForAutumn(uniques);
-            Console.WriteLine(finalValue);
+            
 
 
             //SaveToDb(uniques);
@@ -55,72 +46,7 @@ namespace UltraMonkeyLibrary
             Console.ReadLine();
         }
 
-        private async Task<string> LoopForAutumn(List<WeatherData> uniques)
-        {
-            int temp = 0;
-            string returnValue = "";
-            bool keepRunning = true;
-            List<WeatherData> list = new List<WeatherData>();
-            list = await FirstDayForAutumn(uniques, list, temp);
-            while (keepRunning)
-            {
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if (list[i].Temp > 0 && list[i].Temp < 10 && list[0].Temp > list[1].Temp && list[1].Temp > list[2].Temp && list[2].Temp > list[3].Temp && list[3].Temp > list[4].Temp)
-                    {
-                        returnValue = $"Första höstdagen inföll den: {list[0].Date.ToString()}";
-                        keepRunning = false;
-                        break;
-                    }
-                    if (list.Count < 5)
-                    {
-                        returnValue = "Inget värde hittades";
-                        keepRunning = false;
-                        break;
-                    }
-                    else
-                    {
-                        list.Clear();
-                        temp++;
-                        list = await FirstDayForAutumn(uniques, list, temp);
-                    }
-                }
-            }
-            return await Task.FromResult(returnValue);
-        }
-
-
-
-        private async Task<List<WeatherData>> FirstDayForAutumn(List<WeatherData> uniques, List<WeatherData> temp, int skip)
-        {
-            using (var context = new UltraMonkeyContext())
-            {
-
-                List<WeatherData> temps = new List<WeatherData>();
-                var newList = context.WeatherDatas.GroupBy(x => new
-                {
-                    x.Date.Date,
-                    x.Location
-                }).Select(g => new
-                {
-                    Date = g.Key,
-                    AVG = g.Average(x => x.Temp),
-                    Loc = g.Key.Location
-
-                }).Where(x => x.Loc == "Ute").OrderBy(x => x.Date.Date).Skip(skip).Take(5);
-                foreach (var item in newList)
-                {
-                    WeatherData Rubin = new WeatherData()
-                    {
-                        Date = item.Date.Date,
-                        Location = item.Loc,
-                        Temp = item.AVG
-                    };
-                    temps.Add(Rubin);
-                }
-                return await Task.FromResult(temps);
-            }
-        }
+        
 
         private void SaveToDb(List<WeatherData> uniques)
         {
@@ -130,79 +56,6 @@ namespace UltraMonkeyLibrary
                 context.SaveChanges();
             }
         }
-
-
-
-        //TODO make it talk to the database instead of a list
-        private List<string> OrderTemps(List<WeatherData> uniques, bool orderBy, string roomType)
-        {
-            List<string> temp = new List<string>();
-            string items = "";
-            if (orderBy)
-            {
-                return OrderByTemp(uniques, roomType, temp, ref items);
-            }
-            else
-            {
-                return OrderByDescendingTemp(uniques, roomType, temp, ref items);
-            }
-        }
-
-        private List<string> OrderByDescendingTemp(List<WeatherData> uniques, string roomType, List<string> temp, ref string items)
-        {
-            using (var context = new UltraMonkeyContext())
-            {
-
-                var newList = context.WeatherDatas.GroupBy(x => new
-                {
-                    x.Date.Date,
-                    x.Location
-                }).Select(g => new
-                {
-                    Date = g.Key,
-                    AVG = g.Average(x => x.Temp),
-                    Loc = g.Key.Location
-                }).Where(x => x.Loc == roomType).OrderByDescending(x => x.AVG).ToList();
-                foreach (var item in newList)
-                {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {item.AVG}";
-                    temp.Add(items);
-                }
-                return temp;
-            }
-
-        }
-
-
-
-
-        private List<string> OrderByTemp(List<WeatherData> uniques, string roomType, List<string> temp, ref string items)
-        {
-
-
-            using (var context = new UltraMonkeyContext())
-            {
-                var newList = context.WeatherDatas.GroupBy(x => new
-                {
-                    x.Date.Date,
-                    x.Location
-                }).Select(g => new
-                {
-                    Date = g.Key,
-                    AVG = g.Average(x => x.Temp),
-                    Loc = g.Key.Location
-
-                }).Where(x => x.Loc == roomType).OrderBy(x => x.Date.Date);
-                foreach (var item in newList)
-                {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.Loc} Average: {Math.Round(item.AVG, 1)}";
-                    temp.Add(items);
-                }
-                return temp;
-            }
-        }
-
-
 
 
         private void AddToFile(List<WeatherData> uniques)
