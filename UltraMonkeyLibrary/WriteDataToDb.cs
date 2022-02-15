@@ -11,12 +11,12 @@ namespace UltraMonkeyLibrary
 {
     public class WriteDataToDb
     {
-        public void WriteToDb()
+        public async Task WriteToDb()
         {
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
-            using (StreamReader sr = new StreamReader(@"C:\Users\zn_19\Downloads\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -31,50 +31,50 @@ namespace UltraMonkeyLibrary
                 }
             }
 
-            //ta ut inne & ute med samma tid,
-            //ta ut nästa tid med inne o ute
+            await SaveToDb(uniques);
 
+            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
 
-            using (var context = new UltraMonkeyContext())
-            {
-                context.WeatherDatas.AddRange(uniques);
-                context.SaveChanges();
-            }
+            //using (var context = new UltraMonkeyContext())
+            //{
+            //    context.WeatherDatas.AddRange(uniques);
+            //    context.SaveChanges();
+            //}
 
-            //AddToFile(uniques);
+            AddToFile(uniques);
 
             Console.WriteLine("klar");
             Console.ReadLine();
         }
 
-        private static void RemoveDuplicated(List<WeatherData> uniques)
+
+
+        private async Task SaveToDb(List<WeatherData> uniques)
         {
-            for (int i = 0; i < uniques.Count; i++)
+            using (var context = new UltraMonkeyContext())
             {
-                for (int j = i + 1; j < uniques.Count; j++)
+                if (context.Database.CanConnect())
+                    return;
+                else
                 {
-                    if (uniques[i].Location.ToLower().Contains("inne") == uniques[j].Location.ToLower().Contains("inne"))
-                        uniques.RemoveAt(j);
-                    if (uniques[i].Location.ToLower().Contains("ute") == uniques[j].Location.ToLower().Contains("ute"))
-                        uniques.RemoveAt(j);
-                   
-                    
-                    else
-                        break;
+                    Console.WriteLine("Creating");
+                    context.WeatherDatas.AddRange(uniques);
+                    await context.SaveChangesAsync();
                 }
             }
         }
 
-        private static void AddToFile(List<WeatherData> uniques)
+
+        private void AddToFile(List<WeatherData> uniques, string path)
         {
-            using (var writer = new StreamWriter(@"C:\Users\zn_19\Downloads\Temptest.csv"))
+            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
             }
         }
 
-        private static void AddToClass(List<WeatherData> uniques, string[] splitedLine)
+        private void AddToClass(List<WeatherData> uniques, string[] splitedLine)
         {
             var dates = DateTime.Parse(splitedLine[0]);
             dates.GetDateTimeFormats();
@@ -94,7 +94,7 @@ namespace UltraMonkeyLibrary
             uniques.Add(myData);
         }
 
-        private static void CheckForBadCharacters(string[] splitedLine)
+        private void CheckForBadCharacters(string[] splitedLine)
         {
             if (splitedLine[2].Contains('.'))
             {
@@ -111,7 +111,8 @@ namespace UltraMonkeyLibrary
 
 
 
-           
+            if (splitedLine[2].Contains('^') || splitedLine[2].Contains('’') || splitedLine[2].Contains('â'))
+            {
                 for (int i = 0; i < splitedLine[2].Length; i++)
                 {
                     if (char.IsDigit(splitedLine[2][i]))
@@ -119,10 +120,10 @@ namespace UltraMonkeyLibrary
                         splitedLine[2] = splitedLine[2].Substring(i);
                     }
                 }
-            
+            }
         }
 
-        private static int CalculateMoldIndex(float temp, int humidity)
+        private int CalculateMoldIndex(float temp, int humidity)
         {
             int value = 0;
 

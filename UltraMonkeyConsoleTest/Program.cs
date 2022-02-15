@@ -6,13 +6,32 @@ using UltraMonkeyLibrary;
 
 
 
-//WriteToEF();
+WriteToEF();
 
-
-void WriteToEF()
+async Task WriteToEF()
 {
+    //laddar databasen med allt på filen
     WriteDataToDb write = new WriteDataToDb();
-    write.WriteToDb();
+    await write.WriteToDb();
+    Temps temp = new Temps();
+    Seasons seasons = new Seasons();
+
+
+    //skriver ut genomsnittstemperaturen på vald plats i vald ordning
+    List<string> list = new List<string>();
+    list = await temp.ReturnResult(true, "Inne");
+
+    foreach (var item in list)
+        Console.WriteLine(item);
+
+
+
+    //Skriver ut första höstdagen
+    List<WeatherData> autumnList = new List<WeatherData>();
+    string finalValue = await seasons.LoopForAutumn();
+    Console.WriteLine(finalValue);
+
+   
 }
 
 

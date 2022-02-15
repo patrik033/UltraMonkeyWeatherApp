@@ -18,8 +18,8 @@ namespace UltraMonkeyEFLibrary
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
             optionsBuilder
-                .UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
-                .EnableSensitiveDataLogging()
+                //.UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
+                //.EnableSensitiveDataLogging()
                 .UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
         }
     }
