@@ -16,7 +16,7 @@ namespace UltraMonkeyLibrary
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(@"C:\Users\zn_19\Downloads\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -35,13 +35,13 @@ namespace UltraMonkeyLibrary
             //ta ut nästa tid med inne o ute
 
 
-            //using (var context = new UltraMonkeyContext())
-            //{
-            //    context.WeatherDatas.AddRange(uniques);
-            //    context.SaveChanges();
-            //}
+            using (var context = new UltraMonkeyContext())
+            {
+                context.WeatherDatas.AddRange(uniques);
+                context.SaveChanges();
+            }
 
-            AddToFile(uniques);
+            //AddToFile(uniques);
 
             Console.WriteLine("klar");
             Console.ReadLine();
@@ -67,7 +67,7 @@ namespace UltraMonkeyLibrary
 
         private static void AddToFile(List<WeatherData> uniques)
         {
-            using (var writer = new StreamWriter(@"C:\Users\zn_19\Documents\Temptest.csv"))
+            using (var writer = new StreamWriter(@"C:\Users\zn_19\Downloads\Temptest.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
@@ -111,8 +111,7 @@ namespace UltraMonkeyLibrary
 
 
 
-            if (splitedLine[2].Contains('^') || splitedLine[2].Contains('’') || splitedLine[2].Contains('â'))
-            {
+           
                 for (int i = 0; i < splitedLine[2].Length; i++)
                 {
                     if (char.IsDigit(splitedLine[2][i]))
@@ -120,7 +119,7 @@ namespace UltraMonkeyLibrary
                         splitedLine[2] = splitedLine[2].Substring(i);
                     }
                 }
-            }
+            
         }
 
         private static int CalculateMoldIndex(float temp, int humidity)
