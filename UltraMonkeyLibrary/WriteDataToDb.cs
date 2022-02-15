@@ -15,8 +15,8 @@ namespace UltraMonkeyLibrary
         {
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-            string path = @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData1.csv";
-            using (StreamReader sr = new StreamReader(path))
+
+            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -112,7 +112,7 @@ namespace UltraMonkeyLibrary
 
         private void AddToFile(List<WeatherData> uniques, string path)
         {
-            using (var writer = new StreamWriter(path))
+            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
@@ -161,7 +161,6 @@ namespace UltraMonkeyLibrary
                     break;
                 }
             }
-            float myTemp = float.Parse(splitedLine[2]);
         }
 
         private int CalculateMoldIndex(float temp, int humidity)
