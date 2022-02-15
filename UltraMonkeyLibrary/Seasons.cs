@@ -9,6 +9,7 @@ namespace UltraMonkeyLibrary
 {
     public class Seasons
     {
+        //TODO få funktionen att fungera med vinter också!
         public async Task<string> LoopForAutumn()
         {
             int temp = 0;

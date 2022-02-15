@@ -28,18 +28,71 @@ namespace UltraMonkeyLibrary
                     CheckForBadCharacters(splitedLine);
                     splitedLine[2].Trim();
                     AddToClass(uniques, splitedLine);
+
+
                 }
             }
 
+
+            List<string> list = new List<string>();
+            list = await Counter(uniques);
+
+            foreach (var item in list)
+            {
+                Console.WriteLine(item.ToString());
+            }
+            Console.WriteLine("klar");
+
             await SaveToDb(uniques);
 
-            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+            AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
 
-            Console.WriteLine("klar");
+
             Console.ReadLine();
         }
 
+        private async Task<List<string>> Counter(List<WeatherData> uniques)
+        {
+            List<string> list = new List<string>();
+            List<WeatherData> weatherDatas = new List<WeatherData>();
 
+            int step = 0;
+            for (int i = 0; i < uniques.Count; i++)
+            {
+                weatherDatas = AddNew(uniques, step);
+                foreach (var item in weatherDatas)
+                {
+                    list.Add(item.ToString());
+                    step += 50;
+                }
+            }
+            return await Task.FromResult(list);
+        }
+
+        private List<WeatherData> AddNew(List<WeatherData> data, int skip)
+        {
+            List<WeatherData> temp = new List<WeatherData>();
+
+            var myList = data.Select(x => new
+            {
+                Dat = x.Date,
+                Tmp = x.Temp,
+                Loc = x.Location
+            }).Where(l => l.Loc == "Ute" || l.Loc == "Inne").Skip(skip).Take(4);
+
+            foreach (var item in myList)
+            {
+                WeatherData Rubin = new WeatherData()
+                {
+                    Date = item.Dat,
+                    Location = item.Loc,
+                    Temp = item.Tmp
+                };
+
+                temp.Add(Rubin);
+            }
+            return temp;
+        }
 
         private async Task SaveToDb(List<WeatherData> uniques)
         {
@@ -97,6 +150,8 @@ namespace UltraMonkeyLibrary
             {
                 splitedLine[2] = splitedLine[2].Replace('−', '-');
             }
+
+
 
             for (int i = 0; i < splitedLine[2].Length; i++)
             {

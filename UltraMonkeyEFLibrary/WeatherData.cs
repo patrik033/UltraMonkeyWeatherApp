@@ -19,7 +19,7 @@ namespace UltraMonkeyEFLibrary
 
         public override string ToString()
         {
-            return $"{Date.Year}-{Date.Month}-{Date.Day} {Location} {Temp}";
+            return $"{Date} {Location} {Temp}";
         }
     }
 }

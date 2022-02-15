@@ -15,6 +15,7 @@ async Task WriteToEF()
     WriteDataToDb write = new WriteDataToDb();
     await write.WriteToDb();
     Temps temp = new Temps();
+    
     Seasons seasons = new Seasons();
 
 

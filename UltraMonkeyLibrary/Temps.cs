@@ -22,7 +22,6 @@ namespace UltraMonkeyLibrary
             {
                 temp = await OrderByDescendingType(roomType, temp);
                 return await Task.FromResult(temp);
-
             }
         }
 
