@@ -40,7 +40,7 @@ namespace UltraMonkeyLibrary
                     AVG = g.Average(x => x.Temp),
                     Loc = g.Key.Location
 
-                }).Where(x => x.Loc == roomType).OrderBy(x => x.Date.Date);
+                }).Where(x => x.Loc == roomType).OrderBy(x => x.AVG);
                 foreach (var item in newList)
                 {
                     items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.Loc} Average: {Math.Round(item.AVG, 1)}";

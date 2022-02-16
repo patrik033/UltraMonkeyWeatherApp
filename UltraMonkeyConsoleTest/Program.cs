@@ -6,24 +6,53 @@ using UltraMonkeyLibrary;
 
 
 
-WriteToEF();
+//await WriteToEF();
+string output = AVGtemp("Ute");
+Console.WriteLine(output);
+
+
+Console.ReadLine();
 
 async Task WriteToEF()
 {
     //laddar databasen med allt på filen
     WriteDataToDb write = new WriteDataToDb();
-    await write.WriteToDb();
-    Temps temp = new Temps();
-    
-    Seasons seasons = new Seasons();
 
+
+
+
+    await write.WriteToDb();
+
+
+
+    Temps temp = new Temps();
+    Seasons seasons = new Seasons();
+    Humid humid = new Humid();
+    Mold mold = new Mold();
 
     //skriver ut genomsnittstemperaturen på vald plats i vald ordning
     List<string> list = new List<string>();
-    list = await temp.ReturnResult(true, "Inne");
-
+    list = await temp.ReturnResult(true, "Ute");
     foreach (var item in list)
         Console.WriteLine(item);
+
+
+    //skriver ut torrast/kallast
+    Console.WriteLine();
+    List<string> list2 = new List<string>();
+    list2 = await humid.ReturnResult(true, "Inne");
+    foreach (var item in list2)
+        Console.WriteLine(item);
+
+
+    //skriver ut moldindex
+    Console.WriteLine();
+    List<string> list3 = new List<string>();
+    list3 = await mold.ReturnResult(true, "Ute");
+    foreach (var item in list3)
+        Console.WriteLine(item);
+
+    Console.WriteLine();
 
 
 
@@ -32,38 +61,44 @@ async Task WriteToEF()
     string finalValue = await seasons.LoopForAutumn();
     Console.WriteLine(finalValue);
 
-   
+
 }
 
 
-AVGtemp();
 
-void AVGtemp()
+
+string AVGtemp(string locationPlace)
 {
     //Ask for Date 
+
     Console.WriteLine("Input a date(MM-DD): ");
-    var input = DateTime.Parse("2016-" + Console.ReadLine());
-    
+    var input = DateOnly.Parse("2016-" + Console.ReadLine());
+    string output = "";
+
     //Search for date in database
     using (var dbcontext = new UltraMonkeyContext())
     {
         var searcher = from d in dbcontext.WeatherDatas
-                       where d.Date == input
-                       orderby d.Date
+                       where d.Date.Day == input.Day && d.Date.Month == input.Month && d.Location == locationPlace
+                       group d by new
+                       {
+                           d.Date.Date,
+                           d.Location
+                       } into g
                        select new
                        {
-                           temp = d.Temp,
-                           date = d.Date
+                           Date = g.Key.Date,
+                           Temp = g.Average(x => x.Temp),
+                           Loc = g.Key.Location,
                        };
-        
+
         foreach (var a in searcher)
         {
-            Console.WriteLine(a.date);
+            output = $"{a.Date.Year}-{a.Date.Month}-{a.Date.Day} {Math.Round(a.Temp, 1)} {a.Loc} ";
+            if (searcher  == null)
+                output = "No data found";
+
         }
-        Console.ReadKey();
     }
-    
-    //Take all with date
-    //Count the Average temperature of that date
-    //Output Date + AVG temp (Do it as Return type)
+    return output;
 }

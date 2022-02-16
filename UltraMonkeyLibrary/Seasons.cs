@@ -23,13 +23,13 @@ namespace UltraMonkeyLibrary
                 {
                     if (list[i].Temp > 0 && list[i].Temp < 10 && list[0].Temp > list[1].Temp && list[1].Temp > list[2].Temp && list[2].Temp > list[3].Temp && list[3].Temp > list[4].Temp)
                     {
-                        returnValue = $"Första höstdagen inföll den: {list[0].Date.ToString()}";
+                        returnValue = $"Första höstdagen inföll den: {list[0].Date.Year} {list[0].Date.Month} {list[0].Date.Day}";
                         keepRunning = false;
                         break;
                     }
                     if (list.Count < 5)
                     {
-                        returnValue = "Inget värde hittades";
+                        returnValue = "Hösten inträffade inte";
                         keepRunning = false;
                         break;
                     }

@@ -11,10 +11,17 @@ namespace UltraMonkeyLibrary
 {
     public class WriteDataToDb
     {
+        public List<WeatherData> uniques { get; set; }
+
+        public WriteDataToDb()
+        {
+            uniques = new List<WeatherData>();
+        }
         public async Task WriteToDb()
         {
+
             List<WeatherData> testData = new List<WeatherData>();
-            var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
+            uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
             using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
@@ -26,100 +33,60 @@ namespace UltraMonkeyLibrary
                     splitedLine[2].Trim();
                     splitedLine[1].Trim();
                     CheckForBadCharacters(splitedLine);
-                    splitedLine[2].Trim();
-                    AddToClass(uniques, splitedLine);
-
+                    await AddToClass(uniques, splitedLine);
 
                 }
+
+                //first =1 v2
+                //second = 2
+                /// 1 v1,2,1 v2,4,5,2
+
+                for (int i = 0; i < uniques.Count; i++)
+                {
+                    for (int j = i + 1; j < uniques.Count; j++)
+                    {
+                        if (uniques[i].Location.Contains("Inne") && uniques[j].Location.Contains("Inne") || uniques[i].Location.Contains("Ute") && uniques[j].Location.Contains("Ute"))
+                        {
+                            if (uniques[i].Temp < uniques[j].Temp || uniques[i].Temp > uniques[j].Temp)
+                                uniques[j].OpenTime = 1;
+                            break;
+                        }
+                    }
+                }
             }
-
-
-            List<string> list = new List<string>();
-            list = await Counter(uniques);
-
-            foreach (var item in list)
-            {
-                Console.WriteLine(item.ToString());
-            }
+            // SaveToDb(uniques);
             Console.WriteLine("klar");
-
-            await SaveToDb(uniques);
-
             AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
-
-
-            Console.ReadLine();
         }
 
-        private async Task<List<string>> Counter(List<WeatherData> uniques)
-        {
-            List<string> list = new List<string>();
-            List<WeatherData> weatherDatas = new List<WeatherData>();
-
-            int step = 0;
-            for (int i = 0; i < uniques.Count; i++)
-            {
-                weatherDatas = AddNew(uniques, step);
-                foreach (var item in weatherDatas)
-                {
-                    list.Add(item.ToString());
-                    step += 50;
-                }
-            }
-            return await Task.FromResult(list);
-        }
-
-        private List<WeatherData> AddNew(List<WeatherData> data, int skip)
-        {
-            List<WeatherData> temp = new List<WeatherData>();
-
-            var myList = data.Select(x => new
-            {
-                Dat = x.Date,
-                Tmp = x.Temp,
-                Loc = x.Location
-            }).Where(l => l.Loc == "Ute" || l.Loc == "Inne").Skip(skip).Take(4);
-
-            foreach (var item in myList)
-            {
-                WeatherData Rubin = new WeatherData()
-                {
-                    Date = item.Dat,
-                    Location = item.Loc,
-                    Temp = item.Tmp
-                };
-
-                temp.Add(Rubin);
-            }
-            return temp;
-        }
-
-        private async Task SaveToDb(List<WeatherData> uniques)
+        private void SaveToDb(List<WeatherData> uniques)
         {
             using (var context = new UltraMonkeyContext())
             {
-                if (context.Database.CanConnect())
-                    return;
-                else
+                if (context.WeatherDatas.Count() == 0)
                 {
                     Console.WriteLine("Creating");
                     context.WeatherDatas.AddRange(uniques);
-                    await context.SaveChangesAsync();
+                    context.SaveChanges();
+                    Console.WriteLine("Finished");
                 }
+                else
+                    Console.WriteLine("Database already exists");
+
             }
         }
 
 
         private void AddToFile(List<WeatherData> uniques, string path)
         {
-            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
+            using (var writer = new StreamWriter(path))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
             }
         }
 
-        private void AddToClass(List<WeatherData> uniques, string[] splitedLine)
+        private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine)
         {
             var dates = DateTime.Parse(splitedLine[0]);
             dates.GetDateTimeFormats();
@@ -134,9 +101,15 @@ namespace UltraMonkeyLibrary
                 Location = location,
                 Temp = temp,
                 AirMoisture = humid,
-                MoldIndex = moldIndex
+                MoldIndex = moldIndex,
+                OpenTime = 0
             };
+
             uniques.Add(myData);
+
+
+
+            await Task.FromResult(uniques);
         }
 
         private void CheckForBadCharacters(string[] splitedLine)
