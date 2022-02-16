@@ -1,12 +1,13 @@
 ﻿using CsvHelper;
 using System.Globalization;
+using System.Linq;
 using UltraMonkeyConsoleTest;
 using UltraMonkeyEFLibrary;
 using UltraMonkeyLibrary;
 
 
 
-WriteToEF();
+//WriteToEF();
 
 async Task WriteToEF()
 {
@@ -14,7 +15,6 @@ async Task WriteToEF()
     WriteDataToDb write = new WriteDataToDb();
     await write.WriteToDb();
     Temps temp = new Temps();
-    
     Seasons seasons = new Seasons();
 
 
@@ -36,34 +36,55 @@ async Task WriteToEF()
 }
 
 
-AVGtemp();
+AVGtemp("Ute");
 
-void AVGtemp()
+void AVGtemp(string location)
 {
+    float AverageTemp = 0;
     //Ask for Date 
     Console.WriteLine("Input a date(MM-DD): ");
     var input = DateTime.Parse("2016-" + Console.ReadLine());
-    
+    input.ToString("yyyy-MM-dd");
+    //input.ToString("yyyy-MM-dd");
+
     //Search for date in database
     using (var dbcontext = new UltraMonkeyContext())
     {
+        //    var searcher = from d in dbcontext.WeatherDatas
+        //                   where d.Date == input && d.Location == location
+        //                   select new
+        //                   {
+        //                       temp = d.Temp,
+        //                       date = d.Date.ToString("yyyy-MM-dd"),
+        //                       location = d.Location
+        //                   };
         var searcher = from d in dbcontext.WeatherDatas
-                       where d.Date == input
-                       orderby d.Date
-                       select new
-                       {
-                           temp = d.Temp,
-                           date = d.Date
-                       };
-        
-        foreach (var a in searcher)
+                   where d.Location == location && d.Date == input
+                   group d by new
+                   {
+                       Date = d.Date,
+                       Temp = d.Temp,
+                       Loc = d.Location
+                   } into g
+                   select new
+                   {
+                       date = g.Key,
+                       temp = g.Average(x => x.Temp),
+                       loc = g.Key.Loc
+
+                    };
+
+    foreach (var a in searcher)
         {
-            Console.WriteLine(a.date);
+            AverageTemp += a.temp;
+            Console.WriteLine($"{a.date} {a.temp} {a.loc}");
+            
         }
+        Console.WriteLine($"{AverageTemp}");
         Console.ReadKey();
     }
+}
     
     //Take all with date
     //Count the Average temperature of that date
     //Output Date + AVG temp (Do it as Return type)
-}

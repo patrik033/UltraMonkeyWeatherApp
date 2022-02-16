@@ -11,12 +11,14 @@ namespace UltraMonkeyLibrary
 {
     public class WriteDataToDb
     {
+        string path = @"C:\Users\zn_19\Downloads\TempFuktData.csv";
+        string pathTest = @"C:\Users\zn_19\Downloads\testtext.csv";
         public async Task WriteToDb()
         {
             List<WeatherData> testData = new List<WeatherData>();
             var uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
 
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(path))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -34,18 +36,18 @@ namespace UltraMonkeyLibrary
             }
 
 
-            List<string> list = new List<string>();
-            list = await Counter(uniques);
+            //List<string> list = new List<string>();
+            //list = await Counter(uniques);
 
-            foreach (var item in list)
-            {
-                Console.WriteLine(item.ToString());
-            }
-            Console.WriteLine("klar");
+            //foreach (var item in list)
+            //{
+            //    Console.WriteLine(item.ToString());
+            //}
+            //Console.WriteLine("klar");
 
             await SaveToDb(uniques);
 
-            AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+            //AddToFile(uniques, pathTest);
 
 
             Console.ReadLine();
@@ -98,21 +100,17 @@ namespace UltraMonkeyLibrary
         {
             using (var context = new UltraMonkeyContext())
             {
-                if (context.Database.CanConnect())
-                    return;
-                else
-                {
                     Console.WriteLine("Creating");
                     context.WeatherDatas.AddRange(uniques);
-                    await context.SaveChangesAsync();
-                }
+                    context.SaveChanges();
+                    
             }
         }
 
 
-        private void AddToFile(List<WeatherData> uniques, string path)
+        private void AddToFile(List<WeatherData> uniques, string pathTest)
         {
-            using (var writer = new StreamWriter(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv"))
+            using (var writer = new StreamWriter(pathTest))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
