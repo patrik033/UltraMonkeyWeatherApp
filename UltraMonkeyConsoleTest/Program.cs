@@ -38,22 +38,25 @@ var menu = AnsiConsole.Prompt(
     case '1':
             PromptMetod();
             //PromptDateList();
-            //AVGtemp();
+            string output = AVGtemp("Ute");
+            Console.WriteLine(output);
             Console.ReadKey();
-            Console.Clear();
             break;
 
         case '2':
-            Console.WriteLine();
+            List<string> list = new List<string>();
+            list = await temp.ReturnResult(true, "Ute");
+            foreach (var item in list)
+                Console.WriteLine(item);
+            Console.ReadKey();
+            break;
+
+        case '3':
             List<string> list2 = new List<string>();
             list2 = await humid.ReturnResult(true, "Inne");
             foreach (var item in list2)
                 Console.WriteLine(item);
                 Console.ReadKey();
-            break;
-
-        case '3':
-        
             break;
 
         case '4':
