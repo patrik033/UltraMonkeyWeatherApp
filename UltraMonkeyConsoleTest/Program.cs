@@ -36,9 +36,9 @@ var menu = AnsiConsole.Prompt(
         break;
     
     case '1':
-            PromptMetod();
-            //PromptDateList();
-            string output = AVGtemp("Ute");
+            string value = PromptMetod();
+            PromptDateList(menu, temp);
+            string output = AVGtemp(value);
             Console.WriteLine(output);
             Console.ReadKey();
             break;
@@ -84,23 +84,35 @@ var menu = AnsiConsole.Prompt(
     }
 }
 
-//string PromptDateList(string input)
-//{
-//    //Kallar på Query 
-//    //Var queryn kommer adderas i Addchoices
+string PromptDateList(string menu, Temps Temp)
+{
+    //kallar på query 
+    List<string> Dates = new List<string>();
+    if (menu == "Ute")
+	{
+        Dates = Temp.ReturnResult(true, "Ute");
+	}
+    else
+	{
+        Dates = Temp.ReturnResult(true, "Inne");
+	}
+    foreach (var d in Dates)
+        Console.WriteLine(item);
+    //var queryn kommer adderas i addchoices
     
     
-//    var menu = AnsiConsole.Prompt(
-//    new SelectionPrompt<string>()
-//        .Title("Visa väderdata?")
-//        .PageSize(10)
-//        .MoreChoicesText("Utomhus")
-//        .AddChoices(QueryTable {
-//            "placeholder"
-//        }));
-//AnsiConsole.Write(menu);
-//return menu;
-//}
+    var menu = AnsiConsole.Prompt(
+    new SelectionPrompt<string>()
+        .Title("Visa VäderData?")
+        .PageSize(10)
+        .MoreChoicesText("utomhus")
+        .AddChoices(queryTable {
+            Dates
+        }));
+AnsiConsole.Write(menu);
+
+}
+return dateList;
 
 await WriteToEF();
 //string output = AVGtemp("Ute");
@@ -118,7 +130,17 @@ string PromptMetod()
             "1. Inne",
             "2. Ute"
         }));
-    return menu;
+        
+        if (menu[] == '1')
+	    {
+            menu = "Inne";
+	    }
+        else
+	    {
+            menu = "Ute";
+	    }
+        return menu;
+
 }
 
 Console.ReadLine();
@@ -174,26 +196,16 @@ async Task WriteToEF()
 
 }
 
-string AVGtemp(string locationPlace)
+string AVGtemp(string locationPlace, DateOnly input)
 {
-    float AverageTemp = 0;
     //Ask for Date 
-
-    Console.WriteLine("Input a date(MM-DD): ");
-    var input = DateOnly.Parse("2016-" + Console.ReadLine());
+    //Console.WriteLine("Input a date(MM-DD): ");
+    //var input = DateOnly.Parse("2016-" + Console.ReadLine());
     string output = "";
 
     //Search for date in database
     using (var dbcontext = new UltraMonkeyContext())
     {
-        //    var searcher = from d in dbcontext.WeatherDatas
-        //                   where d.Date == input && d.Location == location
-        //                   select new
-        //                   {
-        //                       temp = d.Temp,
-        //                       date = d.Date.ToString("yyyy-MM-dd"),
-        //                       location = d.Location
-        //                   };
         var searcher = from d in dbcontext.WeatherDatas
                        where d.Date.Day == input.Day && d.Date.Month == input.Month && d.Location == locationPlace
                        group d by new
