@@ -134,9 +134,9 @@ namespace UltraMonkeyLibrary
         }
 
 
-        private void AddToFile(List<WeatherData> uniques, string path)
+        private void AddToFile(List<WeatherData> uniques, string pathTest)
         {
-            using (var writer = new StreamWriter(path))
+            using (var writer = new StreamWriter(@"C:\Users\zn_19\Downloads\testtext.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);
