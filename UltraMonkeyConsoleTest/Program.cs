@@ -58,14 +58,14 @@ string PromptMetod()
             "2. Ute"
         }));
         
-        if (menu[] == '1')
-	    {
-            menu = "Inne";
-	    }
-        else
-	    {
-            menu = "Ute";
-	    }
+     //   if (menu[] == '1')
+	    //{
+     //       menu = "Inne";
+	    //}
+     //   else
+	    //{
+     //       menu = "Ute";
+	    //}
         return menu;
 
 }
@@ -205,8 +205,8 @@ async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
             case '1':
                 PromptMetod();
                 //PromptDateList();
-                string output = AVGtemp("Ute");
-                Console.WriteLine(output);
+                //string output = AVGtemp("Ute");
+               // Console.WriteLine(output);
                 Console.ReadKey();
                 break;
 

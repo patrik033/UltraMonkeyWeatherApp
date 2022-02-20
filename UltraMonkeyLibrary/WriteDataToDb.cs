@@ -38,8 +38,8 @@ namespace UltraMonkeyLibrary
                 RemoveDuplicates();
                 AddOpenTime();
             }
-             SaveToDb(uniques);
-           
+            SaveToDb(uniques);
+
             Console.WriteLine("klar");
             //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
         }
