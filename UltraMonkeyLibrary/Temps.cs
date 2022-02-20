@@ -67,7 +67,7 @@ namespace UltraMonkeyLibrary
                 }).Where(x => x.Loc == roomType).OrderByDescending(x => x.AVG).ToList();
                 foreach (var item in newList)
                 {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {item.AVG}";
+                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {Math.Round(item.AVG, 1)}";
                     temp.Add(items);
                 }
                 return await Task.FromResult(temp);

@@ -20,10 +20,10 @@ namespace UltraMonkeyLibrary
         public async Task WriteToDb()
         {
             List<WeatherData> listTest = new List<WeatherData>();
-
             HashSet<WeatherData> testData = new HashSet<WeatherData>();
             uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
+            string path = @"C:\Users\zn_19\Downloads\TempFuktData.csv";
+            using (StreamReader sr = new StreamReader(path))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -39,8 +39,6 @@ namespace UltraMonkeyLibrary
                 AddOpenTime();
             }
              SaveToDb(uniques);
-           
-            Console.WriteLine("klar");
             //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
         }
 
@@ -119,7 +117,7 @@ namespace UltraMonkeyLibrary
 
         private void AddToFile(List<WeatherData> uniques, string pathTest)
         {
-            using (var writer = new StreamWriter(@"C:\Users\zn_19\Downloads\testtext.csv"))
+            using (var writer = new StreamWriter(pathTest))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(uniques);

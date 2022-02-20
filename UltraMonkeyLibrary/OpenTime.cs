@@ -22,7 +22,6 @@ namespace UltraMonkeyLibrary
                     Date = g.Key,
                     AVG = g.Sum(x => x.OpenTime),
 
-
                 }).OrderByDescending(x => x.AVG);
                 foreach (var item in newList)
                 {
@@ -47,11 +46,32 @@ namespace UltraMonkeyLibrary
                     Date = g.Key,
                     AVG = g.Average(x => x.Diff),
 
-
                 }).OrderByDescending(x => x.AVG);
                 foreach (var item in newList)
                 {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.AVG}";
+                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {Math.Round(item.AVG,5)}";
+                    temp.Add(items);
+                }
+                return await Task.FromResult(temp);
+            }
+        }
+        public async Task<List<string>> OrderByDiffAsc(List<string> temp)
+        {
+            using (var context = new UltraMonkeyContext())
+            {
+                string items = "";
+                var newList = context.WeatherDatas.GroupBy(x => new
+                {
+                    x.Date.Date,
+                }).Select(g => new
+                {
+                    Date = g.Key,
+                    AVG = g.Average(x => x.Diff),
+
+                }).OrderBy(x => x.AVG);
+                foreach (var item in newList)
+                {
+                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {Math.Round(item.AVG, 5)}";
                     temp.Add(items);
                 }
                 return await Task.FromResult(temp);

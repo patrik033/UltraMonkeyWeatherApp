@@ -1,3 +1,5 @@
-﻿
+﻿using UltraMonkeyConsole;
 
-Console.ReadLine();
+Menu menu = new Menu();
+await menu.Run();
+
