@@ -12,84 +12,14 @@ Humid humid = new Humid();
 Mold mold = new Mold();
 bool loop = true;
 
-while (loop)
-{
-Console.Clear();
-var menu = AnsiConsole.Prompt(
-    new SelectionPrompt<string>()
-        .Title("Visa väderdata")
-        .PageSize(10)
-        .MoreChoicesText("Utomhus")
-        .AddChoices(new[] {
-            "s. Mata in Data",
-            "1. Medeltemp för valt datum",
-            "2. Sortering av varmast/kallast dag",
-            "3. Sortering av torrast/fuktigast dag",
-            "4. Sortering av minst/högst risk för mögel",
-            "5. Datum för metreologisk höst",
-            "6. Datum för metreologisk vinter"
-        }));
-        AnsiConsole.WriteLine($"{menu[0]}");
-    switch (menu[0])
-    {
-    case 's': await WriteToEF();
-        break;
-    
-    case '1':
-            PromptMetod();
-            //PromptDateList();
-            string output = AVGtemp("Ute");
-            Console.WriteLine(output);
-            Console.ReadKey();
-            break;
-
-        case '2':
-            List<string> list = new List<string>();
-            list = await temp.ReturnResult(true, "Ute");
-            foreach (var item in list)
-                Console.WriteLine(item);
-            Console.ReadKey();
-            break;
-
-        case '3':
-            List<string> list2 = new List<string>();
-            list2 = await humid.ReturnResult(true, "Inne");
-            foreach (var item in list2)
-                Console.WriteLine(item);
-                Console.ReadKey();
-            break;
-
-        case '4':
-            Console.WriteLine();
-            List<string> list3 = new List<string>();
-            list3 = await mold.ReturnResult(true, "Ute");
-            foreach (var item in list3)
-                Console.WriteLine(item);
-            Console.ReadKey();
-            break;
-
-        case '5':
-            List<WeatherData> autumnList = new List<WeatherData>();
-            string finalValue = await seasons.LoopForAutumn();
-            Console.WriteLine(finalValue);
-            Console.ReadKey();
-            break;
-
-        case '6':
-            break;
-    
-    default:
-        
-            break;
-    }
-}
+//await Run(temp, seasons, humid, mold, loop);
 
 //string PromptDateList(string input)
 //{
 //    //Kallar på Query 
 //    //Var queryn kommer adderas i Addchoices
-    
-    
+
+
 //    var menu = AnsiConsole.Prompt(
 //    new SelectionPrompt<string>()
 //        .Title("Visa väderdata?")
@@ -102,9 +32,18 @@ var menu = AnsiConsole.Prompt(
 //return menu;
 //}
 
-await WriteToEF();
+//await WriteToEF();
 //string output = AVGtemp("Ute");
-PromptMetod();
+//PromptMetod();
+
+List<string> myDates = new List<string>();
+myDates = await Dates("Inne",myDates);
+
+foreach (var item in myDates)
+{
+    Console.WriteLine(item);
+}
+
 
 string PromptMetod()
 {
@@ -235,4 +174,110 @@ string AVGtemp(string locationPlace)
         }
     }
     return output;
+}
+
+async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
+{
+    while (loop)
+    {
+        Console.Clear();
+        var menu = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Visa väderdata")
+                .PageSize(10)
+                .MoreChoicesText("Utomhus")
+                .AddChoices(new[] {
+            "s. Mata in Data",
+            "1. Medeltemp för valt datum",
+            "2. Sortering av varmast/kallast dag",
+            "3. Sortering av torrast/fuktigast dag",
+            "4. Sortering av minst/högst risk för mögel",
+            "5. Datum för metreologisk höst",
+            "6. Datum för metreologisk vinter"
+                }));
+        AnsiConsole.WriteLine($"{menu[0]}");
+        switch (menu[0])
+        {
+            case 's':
+                await WriteToEF();
+                break;
+
+            case '1':
+                PromptMetod();
+                //PromptDateList();
+                string output = AVGtemp("Ute");
+                Console.WriteLine(output);
+                Console.ReadKey();
+                break;
+
+            case '2':
+                List<string> list = new List<string>();
+                list = await temp.ReturnResult(true, "Ute");
+                foreach (var item in list)
+                    Console.WriteLine(item);
+                Console.ReadKey();
+                break;
+
+            case '3':
+                List<string> list2 = new List<string>();
+                list2 = await humid.ReturnResult(true, "Inne");
+                foreach (var item in list2)
+                    Console.WriteLine(item);
+                Console.ReadKey();
+                break;
+
+            case '4':
+                Console.WriteLine();
+                List<string> list3 = new List<string>();
+                list3 = await mold.ReturnResult(true, "Ute");
+                foreach (var item in list3)
+                    Console.WriteLine(item);
+                Console.ReadKey();
+                break;
+
+            case '5':
+                List<WeatherData> autumnList = new List<WeatherData>();
+                string finalValue = await seasons.LoopForAutumn();
+                Console.WriteLine(finalValue);
+                Console.ReadKey();
+                break;
+
+            case '6':
+                break;
+
+            default:
+
+                break;
+        }
+    }
+}
+
+
+
+
+
+
+async Task<List<string>> Dates(string roomType, List<string> temp)
+{
+    using (var context = new UltraMonkeyContext())
+    {
+        string items = "";
+        var newList = context.WeatherDatas.GroupBy(x => new
+        {
+            x.Date.Date,
+            x.Location
+        }).Select(g => new
+        {
+            Date = g.Key,
+            AVG = g.Average(x => x.Temp),
+            Loc = g.Key.Location
+
+        }).Where(x => x.Loc == roomType).OrderBy(x => x.Date.Date);
+        foreach (var item in newList)
+        {
+            items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}";
+            temp.Add(items);
+        }
+        return await Task.FromResult(temp);
+    }
 }

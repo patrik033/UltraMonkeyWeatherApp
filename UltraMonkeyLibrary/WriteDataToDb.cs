@@ -23,9 +23,6 @@ namespace UltraMonkeyLibrary
 
             HashSet<WeatherData> testData = new HashSet<WeatherData>();
             uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-            //var uniqueItems = new List<WeatherData>();
-            List<DateTime> counter = new List<DateTime>();
-
             using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
