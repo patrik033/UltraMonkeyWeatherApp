@@ -12,6 +12,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Spectre.Console" Version="0.43.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UltraMonkeyEFLibrary\UltraMonkeyEFLibrary.csproj" />
+    <ProjectReference Include="..\UltraMonkeyLibrary\UltraMonkeyLibrary.csproj" />
   </ItemGroup>
 
 </Project>

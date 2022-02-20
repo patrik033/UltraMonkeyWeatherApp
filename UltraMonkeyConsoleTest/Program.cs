@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using System.Globalization;
 using System.Linq;
-using UltraMonkeyConsoleTest;
 using UltraMonkeyEFLibrary;
 using UltraMonkeyLibrary;
 using Spectre.Console;
@@ -10,68 +9,12 @@ Temps temp = new Temps();
 Seasons seasons = new Seasons();
 Humid humid = new Humid();
 Mold mold = new Mold();
+//OpenTime openTime = new OpenTime();
 bool loop = true;
-
-//await Run(temp, seasons, humid, mold, loop);
-
-//string PromptDateList(string input)
-//{
-//    //Kallar på Query 
-//    //Var queryn kommer adderas i Addchoices
-
-
-//    var menu = AnsiConsole.Prompt(
-//    new SelectionPrompt<string>()
-//        .Title("Visa väderdata?")
-//        .PageSize(10)
-//        .MoreChoicesText("Utomhus")
-//        .AddChoices(QueryTable {
-//            "placeholder"
-//        }));
-//AnsiConsole.Write(menu);
-//return menu;
-//}
-
-//await WriteToEF();
-//string output = AVGtemp("Ute");
-//PromptMetod();
-
 List<string> myDates = new List<string>();
-myDates = await Dates("Inne",myDates);
+myDates = await Dates("Inne", myDates);
 
-foreach (var item in myDates)
-{
-    Console.WriteLine(item);
-}
-
-
-string PromptMetod()
-{
-    var menu = AnsiConsole.Prompt(
-    new SelectionPrompt<string>()
-        .Title("Visa väderdata?")
-        .PageSize(10)
-        .MoreChoicesText("Utomhus")
-        .AddChoices(new[]
-        {
-            "1. Inne",
-            "2. Ute"
-        }));
-        
-     //   if (menu[] == '1')
-	    //{
-     //       menu = "Inne";
-	    //}
-     //   else
-	    //{
-     //       menu = "Ute";
-	    //}
-        return menu;
-
-}
-
-Console.ReadLine();
-
+await Run(temp, seasons, humid, mold, loop,myDates);
 async Task WriteToEF()
 {
     //laddar databasen med allt på filen
@@ -142,11 +85,75 @@ async Task WriteToEF()
 
 }
 
-string AVGtemp(string locationPlace, DateOnly input)
+string PromptOrder()
+{
+    var menu = AnsiConsole.Prompt(
+    new SelectionPrompt<string>()
+        .Title("Visa väderdata?")
+        .PageSize(10)
+        .MoreChoicesText("")
+        .AddChoices(new[]
+        {
+            "1. Fallande",
+            "2. Stigande"
+        }));
+
+    if (menu == "1. Fallande")
+    {
+        menu = "DESC";
+    }
+    else
+    {
+        menu = "ASC";
+    }
+    return menu;
+
+}
+string PromptMetod()
+{
+    var menu = AnsiConsole.Prompt(
+    new SelectionPrompt<string>()
+        .Title("Visa väderdata?")
+        .PageSize(10)
+        .MoreChoicesText("")
+        .AddChoices(new[]
+        {
+            "1. Inne",
+            "2. Ute"
+        }));
+
+    if (menu == "1. Inne")
+    {
+        menu = "Inne";
+    }
+    else
+    {
+        menu = "Ute";
+    }
+    return menu;
+
+}
+string PromptDateList(string roomType,List <string> myList)
+{
+    //Kallar på Query 
+    //Var queryn kommer adderas i Addchoices
+
+
+    var menu = AnsiConsole.Prompt(
+    new SelectionPrompt<string>()
+        .Title("Visa väderdata?")
+        .PageSize(10)
+        .MoreChoicesText("Scrolla ner")
+        .AddChoices(myList));
+        
+return menu;
+}
+
+string AVGtemp(string locationPlace, string date)
 {
     //Ask for Date 
     //Console.WriteLine("Input a date(MM-DD): ");
-    //var input = DateOnly.Parse("2016-" + Console.ReadLine());
+    var input = DateOnly.Parse(date);
     string output = "";
 
     //Search for date in database
@@ -169,15 +176,16 @@ string AVGtemp(string locationPlace, DateOnly input)
         foreach (var a in searcher)
         {
             output = $"{a.Date.Year}-{a.Date.Month}-{a.Date.Day} {Math.Round(a.Temp, 1)} {a.Loc} ";
-            if (searcher == null)
-                output = "No data found";
         }
     }
     return output;
 }
 
-async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
+async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop,List <string> myList)
 {
+    //WriteDataToDb write = new WriteDataToDb();
+    //await write.WriteToDb();
+    //await Task.Delay(2000);
     while (loop)
     {
         Console.Clear();
@@ -185,42 +193,42 @@ async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
             new SelectionPrompt<string>()
                 .Title("Visa väderdata")
                 .PageSize(10)
-                .MoreChoicesText("Utomhus")
+                .MoreChoicesText("Scrolla för fler alternativ")
                 .AddChoices(new[] {
-            "s. Mata in Data",
             "1. Medeltemp för valt datum",
             "2. Sortering av varmast/kallast dag",
             "3. Sortering av torrast/fuktigast dag",
             "4. Sortering av minst/högst risk för mögel",
             "5. Datum för metreologisk höst",
-            "6. Datum för metreologisk vinter"
+            "6. Datum för metreologisk vinter",
+            "7. Öppettider av balkongdörr",
+            "8. Temperaturskillnader vid öppen dörr",
+            "Q. Avsluta program"
                 }));
-        AnsiConsole.WriteLine($"{menu[0]}");
         switch (menu[0])
         {
-            case 's':
-                await WriteToEF();
-                break;
-
+            //Klar
             case '1':
                 PromptMetod();
                 //PromptDateList();
-                //string output = AVGtemp("Ute");
-               // Console.WriteLine(output);
+                string output = AVGtemp("Ute");
+                Console.WriteLine(output);
                 Console.ReadKey();
                 break;
-
+            //Klar
             case '2':
                 List<string> list = new List<string>();
-                list = await temp.ReturnResult(true, "Ute");
+                string tempRoom = PromptMetod();
+                list = await temp.ReturnResult(false, tempRoom);
                 foreach (var item in list)
                     Console.WriteLine(item);
                 Console.ReadKey();
                 break;
-
+            //Klar
             case '3':
                 List<string> list2 = new List<string>();
-                list2 = await humid.ReturnResult(true, "Inne");
+                string humidRoom = PromptMetod();
+                list2 = await humid.ReturnResult(true, humidRoom);
                 foreach (var item in list2)
                     Console.WriteLine(item);
                 Console.ReadKey();
@@ -229,7 +237,8 @@ async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
             case '4':
                 Console.WriteLine();
                 List<string> list3 = new List<string>();
-                list3 = await mold.ReturnResult(true, "Ute");
+                string moldRoom = PromptMetod();
+                list3 = await mold.ReturnResult(true, moldRoom);
                 foreach (var item in list3)
                     Console.WriteLine(item);
                 Console.ReadKey();
@@ -242,7 +251,45 @@ async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop)
                 Console.ReadKey();
                 break;
 
-            case '6':
+            case '6': //Metrologisk vinter
+                break;
+
+            case '7': //Öppettider för balkonger
+                OpenTime openTime = new OpenTime();
+                List<string> openList = new List<string>();
+                openList = await openTime.OrderByTime(openList);
+                foreach (var item in openList)
+                {
+                    AnsiConsole.WriteLine($"{item} Minuter");
+                }
+                Console.ReadKey();
+                break;
+
+            case '8': //Tempskillnader
+                OpenTime openTimeDiff = new OpenTime();
+                List<string> diffList = new List<string>();
+                string order = PromptOrder();
+                if (order == "DESC")
+                {
+                    diffList = await openTimeDiff.OrderByDiff(diffList);
+                    foreach (var item in diffList)
+                    {
+                        AnsiConsole.WriteLine($"{item}");
+                    }
+                }
+                else
+                {
+                    diffList = await openTimeDiff.OrderByDiffAsc(diffList);
+                    foreach (var item in diffList)
+                    {
+                        AnsiConsole.WriteLine($"{item}");
+                    }
+                }
+                Console.ReadKey();
+                break;
+
+            case 'Q':
+                loop = false;
                 break;
 
             default:
