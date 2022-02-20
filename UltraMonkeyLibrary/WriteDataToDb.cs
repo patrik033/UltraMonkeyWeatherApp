@@ -25,7 +25,7 @@ namespace UltraMonkeyLibrary
             uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
             //var uniqueItems = new List<WeatherData>();
             List<DateTime> counter = new List<DateTime>();
-            int myCounter = 0;
+
             using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
@@ -38,22 +38,8 @@ namespace UltraMonkeyLibrary
                     CheckForBadCharacters(splitedLine);
                     await AddToClass(uniques, splitedLine);
                 }
-
                 RemoveDuplicates();
                 AddOpenTime();
-
-     
-
-
-
-
-
-
-
-
-
-
-
             }
              SaveToDb(uniques);
            
@@ -106,7 +92,7 @@ namespace UltraMonkeyLibrary
                 }
             }
 
-
+            // only to find the last duplicate from i which could in some cases be located at 2 spots ahead from i
             for (int i = 0; i + 2 < uniques.Count; i++)
             {
                 if (uniques[i].Date == uniques[i + 2].Date && uniques[i].Location == uniques[i + 2].Location && uniques[i].Temp == uniques[i + 2].Temp)
@@ -161,11 +147,7 @@ namespace UltraMonkeyLibrary
                 MoldIndex = moldIndex,
 
             };
-
             uniques.Add(myData);
-
-
-
 
             await Task.FromResult(uniques);
         }
@@ -207,65 +189,6 @@ namespace UltraMonkeyLibrary
             if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
                 value = 0;
             return value;
-        }
-
-
-
-        List<double> AvgPerQuarter(List<WeatherData> data)
-        {
-            DateTime time = data[0].Date;
-            double avgTemp = 0;
-            int points = 0;
-            int count = 0;
-            List<double> tempsPerQuarter = new List<double>();
-            // double[] tempsPerQuarter = new double[96]; //96 är pga att det alltid bara finns 96 kvartar på ett dygn, kommer aldrig att ändras!
-
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (time.AddMinutes(15) > data[i].Date)
-                {
-                    avgTemp += data[i].Temp;
-                    points++;
-                }
-                if (time.AddMinutes(15) <= data[i].Date)
-                {
-                    tempsPerQuarter.Add(Math.Round(avgTemp / points, 1)); // Lägger in medeltemperatur i listan.
-                    count++;
-                    points = 0; // Nollställer dessa inför nästa varv i loopen.
-                    avgTemp = 0;
-                    time = data[i].Date;
-                }
-            }
-            return tempsPerQuarter;
-        }
-
-
-
-        void DoorOpen()
-        {
-
-            DateTime myDate = new DateTime(2016, 10, 01);
-            DateTime myDate2 = new DateTime(2016, 10, 03);
-            var outside = uniques.Where(x => x.Location == "Ute" && x.Date >= myDate && x.Date <= myDate2).ToList();
-            var inside = uniques.Where(x => x.Location == "Inne" && x.Date >= myDate && x.Date <= myDate2).ToList();
-
-            if (outside.Count == 0 || inside.Count == 0) return;
-            List<double> outsideTemps = AvgPerQuarter(outside);
-            List<double> insideTemps = AvgPerQuarter(inside);
-            var doubleList = new List<string>();
-
-            for (int i = 0; i + 1 < insideTemps.Count - 1; i++)
-            {
-
-                if (outsideTemps[i] < outsideTemps[i + 1] && insideTemps[i] > insideTemps[i + 1])
-                {
-                    doubleList.Add($"{outsideTemps[i]}/{outsideTemps[i + 1]}  {String.Format("{0:t}", inside[0].Date.AddMinutes(i * 15))}=>{String.Format("{0:t}", inside[0].Date.AddMinutes(i * 15 + 30))}   {insideTemps[i]}/{insideTemps[i + 1]}");
-                }
-            }
-            foreach (var item in doubleList)
-            {
-                Console.WriteLine(item);
-            }
         }
     }
 }

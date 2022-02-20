@@ -32,7 +32,7 @@ var menu = AnsiConsole.Prompt(
         AnsiConsole.WriteLine($"{menu[0]}");
     switch (menu[0])
     {
-    case 's': WriteToEF();
+    case 's': await WriteToEF();
         break;
     
     case '1':
