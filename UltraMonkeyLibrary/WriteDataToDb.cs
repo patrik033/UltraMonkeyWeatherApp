@@ -19,11 +19,11 @@ namespace UltraMonkeyLibrary
         }
         public async Task WriteToDb()
         {
+            List<WeatherData> listTest = new List<WeatherData>();
 
-            List<WeatherData> testData = new List<WeatherData>();
+            HashSet<WeatherData> testData = new HashSet<WeatherData>();
             uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-
-            using (StreamReader sr = new StreamReader(@"C:\Users\zn_19\Downloads\TempFuktData.csv"))
+            using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
                 string line;
@@ -34,29 +34,69 @@ namespace UltraMonkeyLibrary
                     splitedLine[1].Trim();
                     CheckForBadCharacters(splitedLine);
                     await AddToClass(uniques, splitedLine);
-
                 }
+                RemoveDuplicates();
+                AddOpenTime();
+            }
+             SaveToDb(uniques);
+           
+            Console.WriteLine("klar");
+            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+        }
 
-                //first =1 v2
-                //second = 2
-                /// 1 v1,2,1 v2,4,5,2
+        private void AddOpenTime()
+        {
+            for (int i = 0; i + 31 < uniques.Count; i += 30)
+            {
+                var uteLocation = uniques[i];
+                var inneLocation = uniques[(i + 1)];
 
-                for (int i = 0; i < uniques.Count; i++)
+                if (uniques[i].Location == uniques[i + 1].Location)
                 {
-                    for (int j = i + 1; j < uniques.Count; j++)
+                    i++;
+                }
+                else if (uniques[i].Location == uniques[i + 30].Location && uniques[i + 1].Location == uniques[(i + 1) + 30].Location && uniques[i].Date == uniques[i + 1].Date)
+                {
+
+                    if (uniques[i + 30].Temp > uniques[i].Temp && uniques[(i + 1) + 30].Temp < uniques[i + 1].Temp)
                     {
-                        if (uniques[i].Location.Contains("Inne") && uniques[j].Location.Contains("Inne") || uniques[i].Location.Contains("Ute") && uniques[j].Location.Contains("Ute"))
-                        {
-                            if (uniques[i].Temp < uniques[j].Temp || uniques[i].Temp > uniques[j].Temp)
-                                uniques[j].OpenTime = 1;
-                            break;
-                        }
+                        float outDiff = uniques[i + 30].Temp - uniques[(i)].Temp;
+                        float innDiff = uniques[(i + 1)].Temp - uniques[(i + 30) + 1].Temp;
+                        double result = Math.Round((outDiff + innDiff), 1);
+
+
+                        uniques[(i + 30) + 1].OpenTime = 15;
+                        uniques[(i + 30) + 1].Diff = result;
                     }
                 }
             }
-            SaveToDb(uniques);
-            Console.WriteLine("klar");
-            //AddToFile(uniques, @"C:\Users\zn_19\Downloads\testtext.csv");
+        }
+
+        private void RemoveDuplicates()
+        {
+            for (int i = 0; i < uniques.Count; i++)
+            {
+                for (int j = i + 1; j + 1 < uniques.Count; j++)
+                {
+                    if (uniques[i].Date == uniques[j].Date && uniques[i].Location == uniques[j].Location && uniques[i].Temp == uniques[j].Temp)
+                        uniques.RemoveAt(j);
+
+
+                    if (uniques[i].Date == uniques[j + 1].Date && uniques[i].Location == uniques[j + 1].Location && uniques[i].Temp == uniques[j + 1].Temp)
+                        uniques.RemoveAt(j);
+                    else
+                        break;
+                }
+            }
+
+            // only to find the last duplicate from i which could in some cases be located at 2 spots ahead from i
+            for (int i = 0; i + 2 < uniques.Count; i++)
+            {
+                if (uniques[i].Date == uniques[i + 2].Date && uniques[i].Location == uniques[i + 2].Location && uniques[i].Temp == uniques[i + 2].Temp)
+                {
+                    uniques.RemoveAt(i + 2);
+                }
+            }
         }
 
         private void SaveToDb(List<WeatherData> uniques)
@@ -102,12 +142,9 @@ namespace UltraMonkeyLibrary
                 Temp = temp,
                 AirMoisture = humid,
                 MoldIndex = moldIndex,
-                OpenTime = 0
+
             };
-
             uniques.Add(myData);
-
-
 
             await Task.FromResult(uniques);
         }
