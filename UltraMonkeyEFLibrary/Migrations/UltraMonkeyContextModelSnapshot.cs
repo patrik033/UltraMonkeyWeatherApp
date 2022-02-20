@@ -30,11 +30,14 @@ namespace UltraMonkeyEFLibrary.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AirMoisture")
+                    b.Property<int?>("AirMoisture")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<double>("Diff")
+                        .HasColumnType("float");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -43,8 +46,8 @@ namespace UltraMonkeyEFLibrary.Migrations
                     b.Property<int?>("MoldIndex")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OpenTime")
-                        .HasColumnType("int");
+                    b.Property<double?>("OpenTime")
+                        .HasColumnType("float");
 
                     b.Property<float>("Temp")
                         .HasColumnType("real");

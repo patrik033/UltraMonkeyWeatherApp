@@ -14,12 +14,15 @@ namespace UltraMonkeyEFLibrary
         public float Temp { get; set; }
         public int? AirMoisture { get; set; }
         public int? MoldIndex { get; set; }
-        public int? OpenTime { get; set; }
+        public double? OpenTime { get; set; }
+        public double Diff { get; set; }
 
 
         public override string ToString()
         {
             return $"{Date} {Location} {Temp}";
         }
+
+        
     }
 }

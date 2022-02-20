@@ -6,21 +6,17 @@ using UltraMonkeyLibrary;
 
 
 
-//await WriteToEF();
-string output = AVGtemp("Ute");
+await WriteToEF();
+//string output = AVGtemp("Ute");
+//Console.WriteLine(output);
+string output =AVGtemp("Inne");
 Console.WriteLine(output);
-
-
 Console.ReadLine();
 
 async Task WriteToEF()
 {
     //laddar databasen med allt på filen
     WriteDataToDb write = new WriteDataToDb();
-
-
-
-
     await write.WriteToDb();
 
 
@@ -29,14 +25,37 @@ async Task WriteToEF()
     Seasons seasons = new Seasons();
     Humid humid = new Humid();
     Mold mold = new Mold();
+    OpenTime openTime = new OpenTime();
+
+
+    //skriver ut opentime per dag
+    List<string> openList = new List<string>();
+    openList = await openTime.OrderByTime(openList);
+    foreach (var item in openList)
+    {
+        Console.WriteLine($"{item}");
+    }
+
+    Console.WriteLine();
+
+
+    //skriver ut genomsnitts diff per dag
+    List<string> diffList = new List<string>();
+    diffList = await openTime.OrderByDiff(diffList);
+    foreach (var item in diffList)
+    {
+        Console.WriteLine($"{item}");
+    }
+
+    Console.WriteLine();
 
     //skriver ut genomsnittstemperaturen på vald plats i vald ordning
     List<string> list = new List<string>();
-    list = await temp.ReturnResult(true, "Ute");
+    list = await temp.ReturnResult(true, "Inne");
     foreach (var item in list)
         Console.WriteLine(item);
 
-
+    Console.WriteLine();
     //skriver ut torrast/kallast
     Console.WriteLine();
     List<string> list2 = new List<string>();
@@ -44,7 +63,7 @@ async Task WriteToEF()
     foreach (var item in list2)
         Console.WriteLine(item);
 
-
+    Console.WriteLine();
     //skriver ut moldindex
     Console.WriteLine();
     List<string> list3 = new List<string>();
@@ -97,7 +116,6 @@ string AVGtemp(string locationPlace)
             output = $"{a.Date.Year}-{a.Date.Month}-{a.Date.Day} {Math.Round(a.Temp, 1)} {a.Loc} ";
             if (searcher  == null)
                 output = "No data found";
-
         }
     }
     return output;

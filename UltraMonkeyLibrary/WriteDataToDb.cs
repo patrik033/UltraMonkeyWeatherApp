@@ -19,10 +19,13 @@ namespace UltraMonkeyLibrary
         }
         public async Task WriteToDb()
         {
+            List<WeatherData> listTest = new List<WeatherData>();
 
-            List<WeatherData> testData = new List<WeatherData>();
+            HashSet<WeatherData> testData = new HashSet<WeatherData>();
             uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-
+            //var uniqueItems = new List<WeatherData>();
+            List<DateTime> counter = new List<DateTime>();
+            int myCounter = 0;
             using (StreamReader sr = new StreamReader(@"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv"))
             {
                 string headerLine = sr.ReadLine();
@@ -34,29 +37,83 @@ namespace UltraMonkeyLibrary
                     splitedLine[1].Trim();
                     CheckForBadCharacters(splitedLine);
                     await AddToClass(uniques, splitedLine);
-
                 }
 
-                //first =1 v2
-                //second = 2
-                /// 1 v1,2,1 v2,4,5,2
+                RemoveDuplicates();
+                AddOpenTime();
 
-                for (int i = 0; i < uniques.Count; i++)
+     
+
+
+
+
+
+
+
+
+
+
+
+            }
+             SaveToDb(uniques);
+           
+            Console.WriteLine("klar");
+            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+        }
+
+        private void AddOpenTime()
+        {
+            for (int i = 0; i + 31 < uniques.Count; i += 30)
+            {
+                var uteLocation = uniques[i];
+                var inneLocation = uniques[(i + 1)];
+
+                if (uniques[i].Location == uniques[i + 1].Location)
                 {
-                    for (int j = i + 1; j < uniques.Count; j++)
+                    i++;
+                }
+                else if (uniques[i].Location == uniques[i + 30].Location && uniques[i + 1].Location == uniques[(i + 1) + 30].Location && uniques[i].Date == uniques[i + 1].Date)
+                {
+
+                    if (uniques[i + 30].Temp > uniques[i].Temp && uniques[(i + 1) + 30].Temp < uniques[i + 1].Temp)
                     {
-                        if (uniques[i].Location.Contains("Inne") && uniques[j].Location.Contains("Inne") || uniques[i].Location.Contains("Ute") && uniques[j].Location.Contains("Ute"))
-                        {
-                            if (uniques[i].Temp < uniques[j].Temp || uniques[i].Temp > uniques[j].Temp)
-                                uniques[j].OpenTime = 1;
-                            break;
-                        }
+                        float outDiff = uniques[i + 30].Temp - uniques[(i)].Temp;
+                        float innDiff = uniques[(i + 1)].Temp - uniques[(i + 30) + 1].Temp;
+                        double result = Math.Round((outDiff + innDiff), 1);
+
+
+                        uniques[(i + 30) + 1].OpenTime = 15;
+                        uniques[(i + 30) + 1].Diff = result;
                     }
                 }
             }
-            // SaveToDb(uniques);
-            Console.WriteLine("klar");
-            AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+        }
+
+        private void RemoveDuplicates()
+        {
+            for (int i = 0; i < uniques.Count; i++)
+            {
+                for (int j = i + 1; j + 1 < uniques.Count; j++)
+                {
+                    if (uniques[i].Date == uniques[j].Date && uniques[i].Location == uniques[j].Location && uniques[i].Temp == uniques[j].Temp)
+                        uniques.RemoveAt(j);
+
+
+                    if (uniques[i].Date == uniques[j + 1].Date && uniques[i].Location == uniques[j + 1].Location && uniques[i].Temp == uniques[j + 1].Temp)
+                        uniques.RemoveAt(j);
+                    else
+                        break;
+                }
+            }
+
+
+            for (int i = 0; i + 2 < uniques.Count; i++)
+            {
+                if (uniques[i].Date == uniques[i + 2].Date && uniques[i].Location == uniques[i + 2].Location && uniques[i].Temp == uniques[i + 2].Temp)
+                {
+                    uniques.RemoveAt(i + 2);
+                }
+            }
         }
 
         private void SaveToDb(List<WeatherData> uniques)
@@ -102,10 +159,11 @@ namespace UltraMonkeyLibrary
                 Temp = temp,
                 AirMoisture = humid,
                 MoldIndex = moldIndex,
-                OpenTime = 0
+
             };
 
             uniques.Add(myData);
+
 
 
 
@@ -149,6 +207,65 @@ namespace UltraMonkeyLibrary
             if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
                 value = 0;
             return value;
+        }
+
+
+
+        List<double> AvgPerQuarter(List<WeatherData> data)
+        {
+            DateTime time = data[0].Date;
+            double avgTemp = 0;
+            int points = 0;
+            int count = 0;
+            List<double> tempsPerQuarter = new List<double>();
+            // double[] tempsPerQuarter = new double[96]; //96 är pga att det alltid bara finns 96 kvartar på ett dygn, kommer aldrig att ändras!
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                if (time.AddMinutes(15) > data[i].Date)
+                {
+                    avgTemp += data[i].Temp;
+                    points++;
+                }
+                if (time.AddMinutes(15) <= data[i].Date)
+                {
+                    tempsPerQuarter.Add(Math.Round(avgTemp / points, 1)); // Lägger in medeltemperatur i listan.
+                    count++;
+                    points = 0; // Nollställer dessa inför nästa varv i loopen.
+                    avgTemp = 0;
+                    time = data[i].Date;
+                }
+            }
+            return tempsPerQuarter;
+        }
+
+
+
+        void DoorOpen()
+        {
+
+            DateTime myDate = new DateTime(2016, 10, 01);
+            DateTime myDate2 = new DateTime(2016, 10, 03);
+            var outside = uniques.Where(x => x.Location == "Ute" && x.Date >= myDate && x.Date <= myDate2).ToList();
+            var inside = uniques.Where(x => x.Location == "Inne" && x.Date >= myDate && x.Date <= myDate2).ToList();
+
+            if (outside.Count == 0 || inside.Count == 0) return;
+            List<double> outsideTemps = AvgPerQuarter(outside);
+            List<double> insideTemps = AvgPerQuarter(inside);
+            var doubleList = new List<string>();
+
+            for (int i = 0; i + 1 < insideTemps.Count - 1; i++)
+            {
+
+                if (outsideTemps[i] < outsideTemps[i + 1] && insideTemps[i] > insideTemps[i + 1])
+                {
+                    doubleList.Add($"{outsideTemps[i]}/{outsideTemps[i + 1]}  {String.Format("{0:t}", inside[0].Date.AddMinutes(i * 15))}=>{String.Format("{0:t}", inside[0].Date.AddMinutes(i * 15 + 30))}   {insideTemps[i]}/{insideTemps[i + 1]}");
+                }
+            }
+            foreach (var item in doubleList)
+            {
+                Console.WriteLine(item);
+            }
         }
     }
 }
