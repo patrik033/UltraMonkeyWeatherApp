@@ -123,9 +123,10 @@ namespace UltraMonkeyConsole
 
         public async Task Run()
         {
-            //WriteDataToDb write = new WriteDataToDb();
-            //await write.WriteToDb();
-            //await Task.Delay(2000);
+            Console.Title = "VäderData";
+            WriteDataToDb write = new WriteDataToDb();
+            await write.WriteToDb();
+            
             bool loop = true;
             
             List<string> dateList = new List<string>();

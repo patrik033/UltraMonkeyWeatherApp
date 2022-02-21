@@ -22,5 +22,7 @@ namespace UltraMonkeyEFLibrary
                 //.EnableSensitiveDataLogging()
                 .UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
         }
+
+       
     }
 }
