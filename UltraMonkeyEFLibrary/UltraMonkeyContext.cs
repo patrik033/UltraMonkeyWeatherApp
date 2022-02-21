@@ -23,6 +23,11 @@ namespace UltraMonkeyEFLibrary
                 .UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
         }
 
-       
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<WeatherData>()
+                .HasKey(x => new { x.Date, x.Location });
+        }
+
     }
 }

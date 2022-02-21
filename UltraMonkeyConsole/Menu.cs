@@ -198,6 +198,10 @@ namespace UltraMonkeyConsole
                         break;
 
                     case '6': //Metrologisk vinter
+                        List<WeatherData> winterList = new List<WeatherData>();
+                        string finalWinterValue = await seasons.LoopForWinter();
+                        Console.WriteLine(finalWinterValue);
+                        Console.ReadKey();
                         break;
 
                     

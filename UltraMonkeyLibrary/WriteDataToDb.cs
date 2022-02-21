@@ -37,19 +37,13 @@ namespace UltraMonkeyLibrary
                             var splitedLine = line.Split(',');
                             splitedLine[2].Trim();
                             splitedLine[1].Trim();
-                            CheckForBadCharacters(splitedLine);
-                            await AddToClass(uniques, splitedLine);
+                            float res = CheckForBadCharacters(splitedLine);
+                            await AddToClass(uniques, splitedLine, res);
                         }
-
-
 
                         RemoveDuplicates();
                         AddOpenTime();
                     }
-
-
-
-
                     SaveToDb(uniques);
                 }
                 else
@@ -74,15 +68,15 @@ namespace UltraMonkeyLibrary
                 {
                     i++;
                 }
+
                 else if (uniques[i].Location == uniques[i + 30].Location && uniques[i + 1].Location == uniques[(i + 1) + 30].Location && uniques[i].Date == uniques[i + 1].Date)
                 {
-
+                    //kollar 30 platser framåt, dvs varje kvart om temperaturen har ändrats något
                     if (uniques[i + 30].Temp > uniques[i].Temp && uniques[(i + 1) + 30].Temp < uniques[i + 1].Temp)
                     {
                         float outDiff = uniques[i + 30].Temp - uniques[(i)].Temp;
                         float innDiff = uniques[(i + 1)].Temp - uniques[(i + 30) + 1].Temp;
                         double result = Math.Round((outDiff + innDiff), 1);
-
 
                         uniques[(i + 30) + 1].OpenTime = 15;
                         uniques[(i + 30) + 1].Diff = result;
@@ -120,36 +114,33 @@ namespace UltraMonkeyLibrary
 
         private void SaveToDb(List<WeatherData> uniques)
         {
-            using (var context = new UltraMonkeyContext())
+            int num = 0;
+            //if (context.WeatherDatas.Count() == 0)
+            //{
+            //    Console.WriteLine("Creating");
+            //    context.WeatherDatas.AddRange(uniques);
+            //    context.SaveChanges();
+            //    Console.WriteLine("Finished");
+            //}
+            //else
+            //    Console.WriteLine("Database already exists");
+            for (int i = 0; i < uniques.Count; i++)
             {
-                if (context.WeatherDatas.Count() == 0)
+                try
                 {
-                    Console.WriteLine("Creating");
-                    context.WeatherDatas.AddRange(uniques);
-                    context.SaveChanges();
-                    Console.WriteLine("Finished");
+                    using (var context = new UltraMonkeyContext())
+                    {
+                        context.Add(uniques[i]);
+                        context.SaveChanges();
+                    }
                 }
-                else
-                    Console.WriteLine("Database already exists");
-                //for (int i = 0; i < uniques.Count; i++)
-                //{
-                //    try
-                //    {
-                //        context.Add(uniques[i]);
-                //        context.SaveChanges();
-                //    }
-                //    catch (Exception)
-                //    {
-                //        continue;
-                //    }
-                //}
-          
+                catch
+                {
 
-
-
-
-
+                }
+                num++;
             }
+            Console.WriteLine(num);
         }
 
         //skriv alla data till en fil
@@ -163,25 +154,23 @@ namespace UltraMonkeyLibrary
             }
         }
 
-        private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine)
+        private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine, float res)
         {
             var dates = DateTime.Parse(splitedLine[0]);
             dates.GetDateTimeFormats();
             var location = splitedLine[1];
-            float temp = float.Parse(splitedLine[2]);
+            //float temp = float.Parse(splitedLine[2]);
             var humid = int.Parse(splitedLine[3]);
-            int moldIndex = CalculateMoldIndex(temp, humid);
+            int moldIndex = CalculateMoldIndex(res, humid);
 
             var myData = new WeatherData
             {
                 Date = dates,
                 Location = location,
-                Temp = temp,
+                Temp = res,
                 AirMoisture = humid,
                 MoldIndex = moldIndex,
-
             };
-
 
             uniques.Add(myData);
 
@@ -190,30 +179,10 @@ namespace UltraMonkeyLibrary
 
 
         //TODO fixa fulhacket - kultur
-        private void CheckForBadCharacters(string[] splitedLine)
+        private float CheckForBadCharacters(string[] splitedLine)
         {
-
-            //fulhack här
-            if (splitedLine[2].Contains('.'))
-            {
-                splitedLine[2] = splitedLine[2].Replace('.', ',');
-            }
-            //fulhack?
-            if (splitedLine[2].Contains('−'))
-            {
-                splitedLine[2] = splitedLine[2].Replace('−', '-');
-            }
-
-
-            //Klar?
-            for (int i = 0; i < splitedLine[2].Length; i++)
-            {
-                if (char.IsDigit(splitedLine[2][i]))
-                {
-                    splitedLine[2] = splitedLine[2].Substring(i);
-                    break;
-                }
-            }
+            float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
+            return result;
         }
 
 
@@ -224,11 +193,11 @@ namespace UltraMonkeyLibrary
 
             if (humidity > 90 && humidity <= 100 && temp >= 10 && temp <= 50)
                 value = 3;
-            if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
+            else if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
                 value = 2;
-            if (humidity >= 73 && humidity <= 80 && temp >= 10 && temp <= 50)
+            else if (humidity >= 73 && humidity <= 80 && temp >= 10 && temp <= 50)
                 value = 1;
-            if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
+            else if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
                 value = 0;
             return value;
         }
