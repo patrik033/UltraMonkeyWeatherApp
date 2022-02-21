@@ -88,7 +88,15 @@ namespace UltraMonkeyConsole
 
             return menu;
         }
-
+        void SpectreMenu(List <string> menuChoice)
+        {
+            var menu = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                               .Title("Datumlista")
+                               .PageSize(10)
+                               .MoreChoicesText("Tryck på Enter för att återvända till huvudmenyn")
+                               .AddChoices(menuChoice));
+        }
         string AVGtemp(string locationPlace, string date)
         {
             //Ask for Date 
@@ -161,37 +169,27 @@ namespace UltraMonkeyConsole
                         break;
                     //Klar
                     case '2':
-                        //Temps temp = new Temps();
                         List<string> list = new List<string>();
                         string tempRoom = PromptMetod();
                         list = await temp.ReturnResult(false, tempRoom);
-                        foreach (var item in list)
-                            Console.WriteLine(item);
-                        Console.ReadKey();
+                        SpectreMenu(list);
                         break;
                     //Klar
                     case '3':
-                        //Humid humid = new Humid();
                         List<string> list2 = new List<string>();
                         string humidRoom = PromptMetod();
                         list2 = await humid.ReturnResult(true, humidRoom);
-                        foreach (var item in list2)
-                            Console.WriteLine(item);
-                        Console.ReadKey();
+                        SpectreMenu(list2);
                         break;
 
                     case '4':
-                        //Mold mold = new Mold();
                         List<string> list3 = new List<string>();
                         string moldRoom = PromptMetod();
                         list3 = await mold.ReturnResult(true, moldRoom);
-                        foreach (var item in list3)
-                            Console.WriteLine(item);
-                        Console.ReadKey();
+                        SpectreMenu(list3);
                         break;
 
                     case '5':
-                        //Seasons seasons = new Seasons();
                         List<WeatherData> autumnList = new List<WeatherData>();
                         string finalValue = await seasons.LoopForAutumn();
                         Console.WriteLine(finalValue);
@@ -201,38 +199,25 @@ namespace UltraMonkeyConsole
                     case '6': //Metrologisk vinter
                         break;
 
+                    
                     case '7': //Öppettider för balkonger
-                        //OpenTime openTime = new OpenTime();
                         List<string> openList = new List<string>();
                         openList = await openTime.OrderByTime(openList);
-                        foreach (var item in openList)
-                        {
-                            AnsiConsole.WriteLine($"{item} Minuter");
-                        }
-                        Console.ReadKey();
+                        SpectreMenu(openList);
                         break;
-
+                    
                     case '8': //Tempskillnader
-                        //OpenTime openTimeDiff = new OpenTime();
                         List<string> diffList = new List<string>();
                         string order = PromptOrder();
                         if (order == "DESC")
                         {
-                            diffList = await openTime.OrderByDiff(diffList);
-                            foreach (var item in diffList)
-                            {
-                                AnsiConsole.WriteLine($"{item}");
-                            }
+                          diffList = await openTime.OrderByDiff(diffList);
                         }
                         else
                         {
                             diffList = await openTime.OrderByDiffAsc(diffList);
-                            foreach (var item in diffList)
-                            {
-                                AnsiConsole.WriteLine($"{item}");
-                            }
                         }
-                        Console.ReadKey();
+                        SpectreMenu(diffList);
                         break;
 
                     case 'Q':
