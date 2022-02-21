@@ -209,10 +209,10 @@ async Task Run(Temps temp, Seasons seasons, Humid humid, Mold mold, bool loop,Li
         {
             //Klar
             case '1':
-                string roomType = PromptMetod();
-                string testRun = PromptDateList(roomType,myList);
-                string output = AVGtemp(roomType,testRun);
-                AnsiConsole.WriteLine(output);
+                PromptMetod();
+                //PromptDateList();
+                string output = AVGtemp("Ute");
+                Console.WriteLine(output);
                 Console.ReadKey();
                 break;
             //Klar
