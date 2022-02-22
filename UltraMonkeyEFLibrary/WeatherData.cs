@@ -14,12 +14,8 @@ namespace UltraMonkeyEFLibrary
     {
 
 
-        //public int Id { get; set; }
-        [Key]
-        [Column(Order = 1)]
+        public int Id { get; set; }
         public DateTime Date { get; set; }
-        [Key]
-        [Column(Order = 2)]
         public string Location { get; set; }
         public float Temp { get; set; }
         public int? AirMoisture { get; set; }
@@ -32,7 +28,5 @@ namespace UltraMonkeyEFLibrary
         {
             return $"{Date} {Location} {Temp}";
         }
-
-        
     }
 }

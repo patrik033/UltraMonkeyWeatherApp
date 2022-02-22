@@ -13,8 +13,10 @@ namespace UltraMonkeyEFLibrary.Migrations
                 name: "WeatherDatas",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Temp = table.Column<float>(type: "real", nullable: false),
                     AirMoisture = table.Column<int>(type: "int", nullable: true),
                     MoldIndex = table.Column<int>(type: "int", nullable: true),
@@ -23,7 +25,7 @@ namespace UltraMonkeyEFLibrary.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WeatherDatas", x => new { x.Date, x.Location });
+                    table.PrimaryKey("PK_WeatherDatas", x => x.Id);
                 });
         }
 

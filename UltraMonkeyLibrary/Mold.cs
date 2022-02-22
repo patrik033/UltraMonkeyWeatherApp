@@ -72,14 +72,5 @@ namespace UltraMonkeyLibrary
                 return await Task.FromResult(temp);
             }
         }
-
-
-
-
-        
-
-        
-
-        
     }
 }

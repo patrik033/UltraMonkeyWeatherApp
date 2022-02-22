@@ -192,14 +192,14 @@ namespace UltraMonkeyConsole
 
                     case '5':
                         List<WeatherData> autumnList = new List<WeatherData>();
-                        string finalValue = await seasons.LoopForAutumn();
+                        string finalValue = await seasons.AutumnRes();
                         Console.WriteLine(finalValue);
                         Console.ReadKey();
                         break;
 
                     case '6': //Metrologisk vinter
                         List<WeatherData> winterList = new List<WeatherData>();
-                        string finalWinterValue = await seasons.LoopForWinter();
+                        string finalWinterValue = await seasons.WinterRes();
                         Console.WriteLine(finalWinterValue);
                         Console.ReadKey();
                         break;

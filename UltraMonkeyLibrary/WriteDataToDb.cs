@@ -27,7 +27,7 @@ namespace UltraMonkeyLibrary
                     HashSet<WeatherData> testData = new HashSet<WeatherData>();
                     uniques = testData.DistinctBy(x => x.Date).DistinctBy(c => c.Location).ToList();
 
-                    string path = @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv";
+                    string path = @"..\..\..\..\TempFuktData.csv";
                     using (StreamReader sr = new StreamReader(path))
                     {
                         string headerLine = sr.ReadLine();
@@ -40,7 +40,6 @@ namespace UltraMonkeyLibrary
                             float res = CheckForBadCharacters(splitedLine);
                             await AddToClass(uniques, splitedLine, res);
                         }
-
                         RemoveDuplicates();
                         AddOpenTime();
                     }
@@ -51,10 +50,9 @@ namespace UltraMonkeyLibrary
                     Console.WriteLine("Database allready exists");
                     await Task.Delay(1000);
                 }
-
             }
 
-            //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
+            //AddToFile(uniques, @"..\..\..\..\testtext.csv");
         }
 
         private void AddOpenTime()
@@ -87,61 +85,51 @@ namespace UltraMonkeyLibrary
 
         private void RemoveDuplicates()
         {
+
             for (int i = 0; i < uniques.Count; i++)
             {
-                for (int j = i + 1; j + 1 < uniques.Count; j++)
+                for (int j = i + 1; j < uniques.Count; j++)
                 {
-                    if (uniques[i].Date == uniques[j].Date && uniques[i].Location == uniques[j].Location && uniques[i].Temp == uniques[j].Temp)
+                    if (uniques[i].Date == uniques[j].Date && uniques[i].Location == uniques[j].Location && uniques[i].Temp == uniques[j].Temp && uniques[i].AirMoisture == uniques[j].AirMoisture)
+                    {
                         uniques.RemoveAt(j);
-
-
-                    if (uniques[i].Date == uniques[j + 1].Date && uniques[i].Location == uniques[j + 1].Location && uniques[i].Temp == uniques[j + 1].Temp)
-                        uniques.RemoveAt(j);
-                    else
+                    }
+                    else if (uniques[i].Date != uniques[j].Date)
                         break;
                 }
             }
 
-            // only to find the last duplicate from i which could in some cases be located at 2 spots ahead from i
-            for (int i = 0; i + 2 < uniques.Count; i++)
+            for (int i = 0; i < uniques.Count; i++)
             {
-                if (uniques[i].Date == uniques[i + 2].Date && uniques[i].Location == uniques[i + 2].Location && uniques[i].Temp == uniques[i + 2].Temp)
+                for (int j = i + 1; j < uniques.Count; j++)
                 {
-                    uniques.RemoveAt(i + 2);
+                    if (uniques[i].Date == uniques[j].Date && uniques[i].Location == uniques[j].Location)
+                    {
+                        uniques.RemoveAt(j);
+                    }
+                    else if (uniques[i].Date != uniques[j].Date)
+                        break;
                 }
             }
         }
 
         private void SaveToDb(List<WeatherData> uniques)
         {
-            int num = 0;
-            //if (context.WeatherDatas.Count() == 0)
-            //{
-            //    Console.WriteLine("Creating");
-            //    context.WeatherDatas.AddRange(uniques);
-            //    context.SaveChanges();
-            //    Console.WriteLine("Finished");
-            //}
-            //else
-            //    Console.WriteLine("Database already exists");
-            for (int i = 0; i < uniques.Count; i++)
+            using (var context = new UltraMonkeyContext())
             {
-                try
+                if (context.WeatherDatas.Count() == 0)
                 {
-                    using (var context = new UltraMonkeyContext())
-                    {
-                        context.Add(uniques[i]);
-                        context.SaveChanges();
-                    }
+                    Console.WriteLine("Creating");
+                    context.WeatherDatas.AddRange(uniques);
+                    context.SaveChanges();
+                    Console.WriteLine("Finished");
                 }
-                catch
-                {
-
-                }
-                num++;
+                else
+                    Console.WriteLine("Database already exists");
             }
-            Console.WriteLine(num);
         }
+
+
 
         //skriv alla data till en fil
         //bara testad med .csv filer
@@ -159,7 +147,6 @@ namespace UltraMonkeyLibrary
             var dates = DateTime.Parse(splitedLine[0]);
             dates.GetDateTimeFormats();
             var location = splitedLine[1];
-            //float temp = float.Parse(splitedLine[2]);
             var humid = int.Parse(splitedLine[3]);
             int moldIndex = CalculateMoldIndex(res, humid);
 
@@ -171,14 +158,11 @@ namespace UltraMonkeyLibrary
                 AirMoisture = humid,
                 MoldIndex = moldIndex,
             };
-
             uniques.Add(myData);
-
             await Task.FromResult(uniques);
         }
 
 
-        //TODO fixa fulhacket - kultur
         private float CheckForBadCharacters(string[] splitedLine)
         {
             float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
@@ -203,3 +187,4 @@ namespace UltraMonkeyLibrary
         }
     }
 }
+
