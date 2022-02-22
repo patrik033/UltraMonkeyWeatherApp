@@ -216,7 +216,7 @@ namespace UltraMonkeyConsole
                         string order = PromptOrder();
                         if (order == "DESC")
                         {
-                          diffList = await openTime.OrderByDiff(diffList);
+                            diffList = await openTime.OrderByDiff(diffList);
                         }
                         else
                         {

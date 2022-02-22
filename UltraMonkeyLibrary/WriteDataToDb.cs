@@ -176,13 +176,23 @@ namespace UltraMonkeyLibrary
             int value = 0;
 
             if (humidity > 90 && humidity <= 100 && temp >= 10 && temp <= 50)
+                value = 7;
+            if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
+                value = 6;
+            if (humidity > 70 && humidity <= 80 && temp >= 10 && temp <= 50)
+                value = 5;
+            if (humidity > 60 && humidity <= 70 && temp >= 10 && temp <= 50)
+                value = 4;
+            if (humidity > 50 && humidity <= 60 && temp >= 10 && temp <= 50)
                 value = 3;
-            else if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
+            if (humidity > 40 && humidity <= 50 && temp >= 10 && temp <= 50)
                 value = 2;
-            else if (humidity >= 73 && humidity <= 80 && temp >= 10 && temp <= 50)
+            if (humidity > 30 && humidity <= 40 && temp >= 10 && temp <= 50)
                 value = 1;
-            else if (temp > 50 || humidity < 73 && temp < 10 || temp < 10)
-                value = 0;
+            //if (humidity > 20 && humidity <= 60 && temp >= 10 && temp <= 50)
+            //    value = 2;
+            //if (humidity > 10 && humidity <= 50 && temp >= 10 && temp <= 50)
+            //    value = 1;
             return value;
         }
     }
