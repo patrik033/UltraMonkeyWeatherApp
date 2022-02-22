@@ -9,38 +9,38 @@ namespace UltraMonkeyLibrary
 {
     public class Seasons
     {
-        public async Task<string> AutumnRes()
+        public async Task<string> AutumnResult()
         {
-            List<WeatherData> temp = new List<WeatherData>();
-            temp = await Autumn();
+            List<WeatherData> autumnList = new List<WeatherData>();
+            autumnList = await Autumn();
             string res = "";
 
-            if(temp.Count < 5)
+            if(autumnList.Count < 5)
                 res = "Det var en mild höst";
             else
-                res = $"Första höstdagen inföll den: {temp[0].Date.Year}-{temp[0].Date.Month}-{temp[0].Date.Day}";
+                res = $"Första höstdagen inföll den: {autumnList[0].Date.Year}-{autumnList[0].Date.Month}-{autumnList[0].Date.Day}";
 
             return await Task.FromResult(res);  
         }
 
 
-        public async Task<string> WinterRes()
+        public async Task<string> WinterResult()
         {
-            List<WeatherData> temp = new List<WeatherData>();
-            temp = await Winter();
+            List<WeatherData> winterList = new List<WeatherData>();
+            winterList = await Winter();
             string res = "";
            
-            if (temp.Count < 5)
+            if (winterList.Count < 5)
                 res = "Det var en mild vinter";
             else
-                res = $"Första Vinterdagen inföll den: {temp[0].Date.Year}-{temp[0].Date.Month}-{temp[0].Date.Day}";
+                res = $"Första Vinterdagen inföll den: {winterList[0].Date.Year}-{winterList[0].Date.Month}-{winterList[0].Date.Day}";
 
             return await Task.FromResult(res);
         }
 
         private async Task<List<WeatherData>> Autumn()
         {
-            List<WeatherData> temp = new List<WeatherData>();
+            List<WeatherData> autumnList = new List<WeatherData>();
             using (var context = new UltraMonkeyContext())
             {
                 var autummn = context.WeatherDatas.Where(x => x.Location == "Ute")
@@ -59,16 +59,16 @@ namespace UltraMonkeyLibrary
                         Date = item.Date.Date,
                         Temp = item.AVG
                     };
-                    temp.Add(Rubin);
+                    autumnList.Add(Rubin);
                 }
-                return await Task.FromResult(temp);
+                return await Task.FromResult(autumnList);
             };
         }
 
 
         private async Task<List<WeatherData>> Winter()
         {
-            List<WeatherData> temp = new List<WeatherData>();
+            List<WeatherData> winterList = new List<WeatherData>();
             using (var context = new UltraMonkeyContext())
             {
                 var autummn = context.WeatherDatas.Where(x => x.Location == "Ute")
@@ -87,9 +87,9 @@ namespace UltraMonkeyLibrary
                         Date = item.Date.Date,
                         Temp = item.AVG
                     };
-                    temp.Add(Rubin);
+                    winterList.Add(Rubin);
                 }
-                return await Task.FromResult(temp);
+                return await Task.FromResult(winterList);
             };
         }
     }

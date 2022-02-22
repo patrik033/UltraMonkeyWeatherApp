@@ -19,7 +19,6 @@ namespace UltraMonkeyLibrary
         }
         public async Task WriteToDb()
         {
-
             using (var context = new UltraMonkeyContext())
             {
                 if (context.WeatherDatas.Count() == 0)
@@ -32,14 +31,7 @@ namespace UltraMonkeyLibrary
                     {
                         string headerLine = sr.ReadLine();
                         string line;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            var splitedLine = line.Split(',');
-                            splitedLine[2].Trim();
-                            splitedLine[1].Trim();
-                            float res = CheckForBadCharacters(splitedLine);
-                            await AddToClass(uniques, splitedLine, res);
-                        }
+                        line = await WriteToClass(sr);
                         RemoveDuplicates();
                         AddOpenTime();
                     }
@@ -47,21 +39,33 @@ namespace UltraMonkeyLibrary
                 }
                 else
                 {
-                    Console.WriteLine("Database allready exists");
+                    Console.WriteLine("Database already exists");
                     await Task.Delay(1000);
                 }
             }
 
-            //AddToFile(uniques, @"..\..\..\..\testtext.csv");
         }
 
+        private async Task<string> WriteToClass(StreamReader sr)
+        {
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                var splitedLine = line.Split(',');
+                splitedLine[2].Trim();
+                splitedLine[1].Trim();
+                float res = CheckForBadCharacters(splitedLine);
+                await AddToClass(uniques, splitedLine, res);
+            }
+
+            return line;
+        }
+
+        //lägger till öppettiderna i listan
         private void AddOpenTime()
         {
             for (int i = 0; i + 31 < uniques.Count; i += 30)
             {
-                var uteLocation = uniques[i];
-                var inneLocation = uniques[(i + 1)];
-
                 if (uniques[i].Location == uniques[i + 1].Location)
                 {
                     i++;
@@ -162,7 +166,7 @@ namespace UltraMonkeyLibrary
             await Task.FromResult(uniques);
         }
 
-
+       
         private float CheckForBadCharacters(string[] splitedLine)
         {
             float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
@@ -170,29 +174,25 @@ namespace UltraMonkeyLibrary
         }
 
 
-        //TODO ge mer spridning
+
         private int CalculateMoldIndex(float temp, int humidity)
         {
             int value = 0;
 
             if (humidity > 90 && humidity <= 100 && temp >= 10 && temp <= 50)
                 value = 7;
-            if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
+            else if (humidity > 80 && humidity <= 90 && temp >= 10 && temp <= 50)
                 value = 6;
-            if (humidity > 70 && humidity <= 80 && temp >= 10 && temp <= 50)
+            else if (humidity > 70 && humidity <= 80 && temp >= 10 && temp <= 50)
                 value = 5;
-            if (humidity > 60 && humidity <= 70 && temp >= 10 && temp <= 50)
+            else if (humidity > 60 && humidity <= 70 && temp >= 10 && temp <= 50)
                 value = 4;
-            if (humidity > 50 && humidity <= 60 && temp >= 10 && temp <= 50)
+            else if (humidity > 50 && humidity <= 60 && temp >= 10 && temp <= 50)
                 value = 3;
-            if (humidity > 40 && humidity <= 50 && temp >= 10 && temp <= 50)
+            else if (humidity > 40 && humidity <= 50 && temp >= 10 && temp <= 50)
                 value = 2;
-            if (humidity > 30 && humidity <= 40 && temp >= 10 && temp <= 50)
+            else if (humidity > 30 && humidity <= 40 && temp >= 10 && temp <= 50)
                 value = 1;
-            //if (humidity > 20 && humidity <= 60 && temp >= 10 && temp <= 50)
-            //    value = 2;
-            //if (humidity > 10 && humidity <= 50 && temp >= 10 && temp <= 50)
-            //    value = 1;
             return value;
         }
     }

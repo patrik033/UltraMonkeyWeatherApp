@@ -29,7 +29,7 @@ namespace UltraMonkeyConsole
         {
             var menu = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Visa väderdata?")
+                .Title("Fallande / Stigande")
                 .PageSize(10)
                 .MoreChoicesText("")
                 .AddChoices(new[]
@@ -53,7 +53,7 @@ namespace UltraMonkeyConsole
         {
             var menu = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Visa väderdata?")
+                .Title("Välj plats")
                 .PageSize(10)
                 .MoreChoicesText("")
                 .AddChoices(new[]
@@ -71,7 +71,6 @@ namespace UltraMonkeyConsole
                 menu = "Ute";
             }
             return menu;
-
         }
         async Task<string> PromptDateList(string roomType, List<string> myList)
         {
@@ -88,11 +87,11 @@ namespace UltraMonkeyConsole
 
             return menu;
         }
-        void SpectreMenu(List <string> menuChoice)
+        void SpectreMenu(List<string> menuChoice, string titleOutput)
         {
             var menu = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                               .Title("Datumlista")
+                               .Title(titleOutput)
                                .PageSize(10)
                                .MoreChoicesText("Tryck på Enter för att återvända till huvudmenyn")
                                .AddChoices(menuChoice));
@@ -134,19 +133,138 @@ namespace UltraMonkeyConsole
             Console.Title = "VäderData";
             WriteDataToDb write = new WriteDataToDb();
             await write.WriteToDb();
-            
+
             bool loop = true;
-            
+
             List<string> dateList = new List<string>();
             while (loop)
             {
                 Console.Clear();
-                var menu = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("Visa väderdata")
-                        .PageSize(10)
-                        .MoreChoicesText("Scrolla för fler alternativ")
-                        .AddChoices(new[] {
+                string menu = MenuChoices();
+                switch (menu[0])
+                {
+                    //Klar
+                    case '1':
+                        await AvgTempChoice();
+                        break;
+                    //Klar
+                    case '2':
+                        await HotOrColdDay();
+                        break;
+                    //Klar
+                    case '3':
+                        await HighestOrLowestAirMoisture();
+                        break;
+
+                    case '4':
+                        await HighestOrLowestMoldRisk();
+                        break;
+
+                    case '5':
+                        await DateForAutumn();
+                        break;
+
+                    case '6': //Metrologisk vinter
+                        await DateForWinter();
+                        break;
+
+                    case '7': //Öppettider för balkonger
+                        await BalconyOpenTime();
+                        break;
+
+                    case '8': //Tempskillnader
+                        await BalconyTempDifference();
+                        break;
+                    case 'Q':
+                        loop = false;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private async Task BalconyTempDifference()
+        {
+            List<string> diffList = new List<string>();
+            string order = PromptOrder();
+            if (order == "DESC")
+            {
+                diffList = await openTime.OrderByDiff(diffList);
+            }
+            else
+            {
+                diffList = await openTime.OrderByDiffAsc(diffList);
+            }
+            SpectreMenu(diffList, "Balcony Difference");
+        }
+
+        private async Task BalconyOpenTime()
+        {
+            List<string> openList = new List<string>();
+            openList = await openTime.OrderByTime(openList);
+            SpectreMenu(openList, "Balcony opentime by minutes");
+        }
+
+        private async Task DateForWinter()
+        {
+            List<WeatherData> winterList = new List<WeatherData>();
+            string finalWinterValue = await seasons.WinterResult();
+            Console.WriteLine(finalWinterValue);
+            Console.ReadKey();
+        }
+
+        private async Task DateForAutumn()
+        {
+            List<WeatherData> autumnList = new List<WeatherData>();
+            string finalValue = await seasons.AutumnResult();
+            Console.WriteLine(finalValue);
+            Console.ReadKey();
+        }
+
+        private async Task HighestOrLowestMoldRisk()
+        {
+            List<string> list3 = new List<string>();
+            string moldRoom = PromptMetod();
+            list3 = await mold.ReturnResult(true, moldRoom);
+            SpectreMenu(list3, "Average risk for mold");
+        }
+
+        private async Task HighestOrLowestAirMoisture()
+        {
+            List<string> list2 = new List<string>();
+            string humidRoom = PromptMetod();
+            list2 = await humid.ReturnResult(true, humidRoom);
+            SpectreMenu(list2, "Average air moisture");
+        }
+
+        private async Task HotOrColdDay()
+        {
+            List<string> list = new List<string>();
+            string tempRoom = PromptMetod();
+            list = await temp.ReturnResult(false, tempRoom);
+            SpectreMenu(list, "Average temperature");
+        }
+
+        private async Task AvgTempChoice()
+        {
+            List<string> myList = new List<string>();
+            string roomType = PromptMetod();
+            string testRun = await PromptDateList(roomType, myList);
+            string output = AVGtemp(roomType, testRun);
+            AnsiConsole.WriteLine(output);
+            Console.ReadKey();
+        }
+
+        private static string MenuChoices()
+        {
+            return AnsiConsole.Prompt(
+                                new SelectionPrompt<string>()
+                                    .Title("Visa väderdata")
+                                    .PageSize(10)
+                                    .MoreChoicesText("Scrolla för fler alternativ")
+                                    .AddChoices(new[] {
             "1. Medeltemp för valt datum",
             "2. Sortering av varmast/kallast dag",
             "3. Sortering av torrast/fuktigast dag",
@@ -156,84 +274,7 @@ namespace UltraMonkeyConsole
             "7. Öppettider av balkongdörr",
             "8. Temperaturskillnader vid öppen dörr",
             "Q. Avsluta program"
-                        }));
-                switch (menu[0])
-                {
-                    //Klar
-                    case '1':
-                        List<string> myList = new List<string>();
-                        string roomType = PromptMetod();
-                        string testRun = await PromptDateList(roomType, myList);
-                        string output = AVGtemp(roomType, testRun);
-                        AnsiConsole.WriteLine(output);
-                        Console.ReadKey();
-                        break;
-                    //Klar
-                    case '2':
-                        List<string> list = new List<string>();
-                        string tempRoom = PromptMetod();
-                        list = await temp.ReturnResult(false, tempRoom);
-                        SpectreMenu(list);
-                        break;
-                    //Klar
-                    case '3':
-                        List<string> list2 = new List<string>();
-                        string humidRoom = PromptMetod();
-                        list2 = await humid.ReturnResult(true, humidRoom);
-                        SpectreMenu(list2);
-                        break;
-
-                    case '4':
-                        List<string> list3 = new List<string>();
-                        string moldRoom = PromptMetod();
-                        list3 = await mold.ReturnResult(true, moldRoom);
-                        SpectreMenu(list3);
-                        break;
-
-                    case '5':
-                        List<WeatherData> autumnList = new List<WeatherData>();
-                        string finalValue = await seasons.AutumnRes();
-                        Console.WriteLine(finalValue);
-                        Console.ReadKey();
-                        break;
-
-                    case '6': //Metrologisk vinter
-                        List<WeatherData> winterList = new List<WeatherData>();
-                        string finalWinterValue = await seasons.WinterRes();
-                        Console.WriteLine(finalWinterValue);
-                        Console.ReadKey();
-                        break;
-
-                    
-                    case '7': //Öppettider för balkonger
-                        List<string> openList = new List<string>();
-                        openList = await openTime.OrderByTime(openList);
-                        SpectreMenu(openList);
-                        break;
-                    
-                    case '8': //Tempskillnader
-                        List<string> diffList = new List<string>();
-                        string order = PromptOrder();
-                        if (order == "DESC")
-                        {
-                            diffList = await openTime.OrderByDiff(diffList);
-                        }
-                        else
-                        {
-                            diffList = await openTime.OrderByDiffAsc(diffList);
-                        }
-                        SpectreMenu(diffList);
-                        break;
-
-                    case 'Q':
-                        loop = false;
-                        break;
-
-                    default:
-
-                        break;
-                }
-            }
+                                    }));
         }
 
         async Task<List<string>> Dates(string roomType, List<string> temp)
@@ -260,6 +301,5 @@ namespace UltraMonkeyConsole
                 return await Task.FromResult(temp);
             }
         }
-
     }
 }
