@@ -131,9 +131,10 @@ namespace UltraMonkeyConsole
 
         public async Task Run()
         {
+            Console.Title = "VäderData";
             WriteDataToDb write = new WriteDataToDb();
             await write.WriteToDb();
-            await Task.Delay(2000);
+            
             bool loop = true;
             
             List<string> dateList = new List<string>();
@@ -197,6 +198,10 @@ namespace UltraMonkeyConsole
                         break;
 
                     case '6': //Metrologisk vinter
+                        List<WeatherData> winterList = new List<WeatherData>();
+                        string finalWinterValue = await seasons.LoopForWinter();
+                        Console.WriteLine(finalWinterValue);
+                        Console.ReadKey();
                         break;
 
                     

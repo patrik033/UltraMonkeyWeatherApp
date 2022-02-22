@@ -12,8 +12,8 @@ using UltraMonkeyEFLibrary;
 namespace UltraMonkeyEFLibrary.Migrations
 {
     [DbContext(typeof(UltraMonkeyContext))]
-    [Migration("20220210094558_Init")]
-    partial class Init
+    [Migration("20220221201603_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,32 +26,30 @@ namespace UltraMonkeyEFLibrary.Migrations
 
             modelBuilder.Entity("UltraMonkeyEFLibrary.WeatherData", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("AirMoisture")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnOrder(1);
 
                     b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnOrder(2);
+
+                    b.Property<int?>("AirMoisture")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Diff")
+                        .HasColumnType("float");
 
                     b.Property<int?>("MoldIndex")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OpenTime")
-                        .HasColumnType("int");
+                    b.Property<double?>("OpenTime")
+                        .HasColumnType("float");
 
                     b.Property<float>("Temp")
                         .HasColumnType("real");
 
-                    b.HasKey("Id");
+                    b.HasKey("Date", "Location");
 
                     b.ToTable("WeatherDatas");
                 });

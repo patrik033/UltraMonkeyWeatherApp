@@ -19,26 +19,41 @@ namespace UltraMonkeyLibrary
         }
         public async Task WriteToDb()
         {
-            List<WeatherData> listTest = new List<WeatherData>();
-            HashSet<WeatherData> testData = new HashSet<WeatherData>();
-            uniques = testData.DistinctBy(x => x.Date).DistinctBy(d => d.Temp).DistinctBy(c => c.Location).ToList();
-            string path = @"C:\Users\zn_19\Downloads\TempFuktData.csv";
-            using (StreamReader sr = new StreamReader(path))
+
+            using (var context = new UltraMonkeyContext())
             {
-                string headerLine = sr.ReadLine();
-                string line;
-                while ((line = sr.ReadLine()) != null)
+                if (context.WeatherDatas.Count() == 0)
                 {
-                    var splitedLine = line.Split(',');
-                    splitedLine[2].Trim();
-                    splitedLine[1].Trim();
-                    CheckForBadCharacters(splitedLine);
-                    await AddToClass(uniques, splitedLine);
+                    HashSet<WeatherData> testData = new HashSet<WeatherData>();
+                    uniques = testData.DistinctBy(x => x.Date).DistinctBy(c => c.Location).ToList();
+
+                    string path = @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\TempFuktData.csv";
+                    using (StreamReader sr = new StreamReader(path))
+                    {
+                        string headerLine = sr.ReadLine();
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            var splitedLine = line.Split(',');
+                            splitedLine[2].Trim();
+                            splitedLine[1].Trim();
+                            float res = CheckForBadCharacters(splitedLine);
+                            await AddToClass(uniques, splitedLine, res);
+                        }
+
+                        RemoveDuplicates();
+                        AddOpenTime();
+                    }
+                    SaveToDb(uniques);
                 }
-                RemoveDuplicates();
-                AddOpenTime();
+                else
+                {
+                    Console.WriteLine("Database allready exists");
+                    await Task.Delay(1000);
+                }
+
             }
-             SaveToDb(uniques);
+
             //AddToFile(uniques, @"C:\Users\patri\source\repos\UltraMonkeyWeatherApp\testtext.csv");
         }
 
@@ -53,15 +68,15 @@ namespace UltraMonkeyLibrary
                 {
                     i++;
                 }
+
                 else if (uniques[i].Location == uniques[i + 30].Location && uniques[i + 1].Location == uniques[(i + 1) + 30].Location && uniques[i].Date == uniques[i + 1].Date)
                 {
-
+                    //kollar 30 platser framåt, dvs varje kvart om temperaturen har ändrats något
                     if (uniques[i + 30].Temp > uniques[i].Temp && uniques[(i + 1) + 30].Temp < uniques[i + 1].Temp)
                     {
                         float outDiff = uniques[i + 30].Temp - uniques[(i)].Temp;
                         float innDiff = uniques[(i + 1)].Temp - uniques[(i + 30) + 1].Temp;
                         double result = Math.Round((outDiff + innDiff), 1);
-
 
                         uniques[(i + 30) + 1].OpenTime = 15;
                         uniques[(i + 30) + 1].Diff = result;
@@ -99,22 +114,37 @@ namespace UltraMonkeyLibrary
 
         private void SaveToDb(List<WeatherData> uniques)
         {
-            using (var context = new UltraMonkeyContext())
+            int num = 0;
+            //if (context.WeatherDatas.Count() == 0)
+            //{
+            //    Console.WriteLine("Creating");
+            //    context.WeatherDatas.AddRange(uniques);
+            //    context.SaveChanges();
+            //    Console.WriteLine("Finished");
+            //}
+            //else
+            //    Console.WriteLine("Database already exists");
+            for (int i = 0; i < uniques.Count; i++)
             {
-                if (context.WeatherDatas.Count() == 0)
+                try
                 {
-                    Console.WriteLine("Creating");
-                    context.WeatherDatas.AddRange(uniques);
-                    context.SaveChanges();
-                    Console.WriteLine("Finished");
+                    using (var context = new UltraMonkeyContext())
+                    {
+                        context.Add(uniques[i]);
+                        context.SaveChanges();
+                    }
                 }
-                else
-                    Console.WriteLine("Database already exists");
+                catch
+                {
 
+                }
+                num++;
             }
+            Console.WriteLine(num);
         }
 
-
+        //skriv alla data till en fil
+        //bara testad med .csv filer
         private void AddToFile(List<WeatherData> uniques, string pathTest)
         {
             using (var writer = new StreamWriter(pathTest))
@@ -124,53 +154,39 @@ namespace UltraMonkeyLibrary
             }
         }
 
-        private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine)
+        private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine, float res)
         {
             var dates = DateTime.Parse(splitedLine[0]);
             dates.GetDateTimeFormats();
             var location = splitedLine[1];
-            float temp = float.Parse(splitedLine[2]);
+            //float temp = float.Parse(splitedLine[2]);
             var humid = int.Parse(splitedLine[3]);
-            int moldIndex = CalculateMoldIndex(temp, humid);
+            int moldIndex = CalculateMoldIndex(res, humid);
 
             var myData = new WeatherData
             {
                 Date = dates,
                 Location = location,
-                Temp = temp,
+                Temp = res,
                 AirMoisture = humid,
                 MoldIndex = moldIndex,
-
             };
+
             uniques.Add(myData);
 
             await Task.FromResult(uniques);
         }
 
-        private void CheckForBadCharacters(string[] splitedLine)
+
+        //TODO fixa fulhacket - kultur
+        private float CheckForBadCharacters(string[] splitedLine)
         {
-            if (splitedLine[2].Contains('.'))
-            {
-                splitedLine[2] = splitedLine[2].Replace('.', ',');
-            }
-
-            if (splitedLine[2].Contains('−'))
-            {
-                splitedLine[2] = splitedLine[2].Replace('−', '-');
-            }
-
-
-
-            for (int i = 0; i < splitedLine[2].Length; i++)
-            {
-                if (char.IsDigit(splitedLine[2][i]))
-                {
-                    splitedLine[2] = splitedLine[2].Substring(i);
-                    break;
-                }
-            }
+            float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
+            return result;
         }
 
+
+        //TODO ge mer spridning
         private int CalculateMoldIndex(float temp, int humidity)
         {
             int value = 0;

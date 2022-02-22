@@ -22,7 +22,7 @@ namespace UltraMonkeyLibrary
                     Date = g.Key,
                     AVG = g.Sum(x => x.OpenTime),
 
-                }).OrderByDescending(x => x.AVG);
+                }).OrderByDescending(x => x.AVG).ThenBy(x => x.Date.Date);
                 foreach (var item in newList)
                 {
                     items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.AVG}";
