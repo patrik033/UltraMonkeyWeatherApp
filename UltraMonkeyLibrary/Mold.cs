@@ -41,7 +41,7 @@ namespace UltraMonkeyLibrary
                 }).Where(x => x.Loc == roomType).OrderByDescending(x => x.AVG).ToList();
                 foreach (var item in newList)
                 {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {item.AVG}";
+                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, Average: {Math.Round((double)item.AVG,2)}";
                     temp.Add(items);
                 }
                 return await Task.FromResult(temp);
@@ -66,7 +66,7 @@ namespace UltraMonkeyLibrary
                 }).Where(x => x.Loc == roomType).OrderBy(x => x.AVG);
                 foreach (var item in newList)
                 {
-                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.Loc} Average: {item.AVG}";
+                    items = $"{item.Date.Date.Year}-{item.Date.Date.Month}-{item.Date.Date.Day}, {item.Loc} Average: {Math.Round((double)item.AVG, 2)}";
                     temp.Add(items);
                 }
                 return await Task.FromResult(temp);

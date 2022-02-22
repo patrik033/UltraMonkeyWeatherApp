@@ -131,9 +131,9 @@ namespace UltraMonkeyConsole
 
         public async Task Run()
         {
-            //WriteDataToDb write = new WriteDataToDb();
-            //await write.WriteToDb();
-            //await Task.Delay(2000);
+            WriteDataToDb write = new WriteDataToDb();
+            await write.WriteToDb();
+            await Task.Delay(2000);
             bool loop = true;
             
             List<string> dateList = new List<string>();
@@ -211,7 +211,7 @@ namespace UltraMonkeyConsole
                         string order = PromptOrder();
                         if (order == "DESC")
                         {
-                          diffList = await openTime.OrderByDiff(diffList);
+                            diffList = await openTime.OrderByDiff(diffList);
                         }
                         else
                         {
