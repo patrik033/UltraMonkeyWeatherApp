@@ -105,7 +105,7 @@ namespace UltraMonkeyLibrary
 
 
         /* Vi har använta oss utav två nästlade for loopar då vi ansåg att använda oss utav en kompositnyckel för att sortera
-        ut databasen dels tog på tog för lång tid(10 sekunder mot 3-4 minuter), dels så var resultaten snarlika i med hur många resultat
+        ut databasen dels tog på tog för lång tid(10 sekunder mot 3-4 minuter(om man har en processor med 16 kärnor :=)  )), dels så var resultaten snarlika i med hur många resultat
         som försvann mellan de olika resultaten(cirka 139000 för kompositnyckel och cirka 140311 på det sätt vi gör nu).
          */
         private void RemoveDuplicates()
