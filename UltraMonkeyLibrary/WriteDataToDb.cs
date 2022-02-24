@@ -23,9 +23,6 @@ namespace UltraMonkeyLibrary
             {
                 if (context.WeatherDatas.Count() == 0)
                 {
-                    HashSet<WeatherData> testData = new HashSet<WeatherData>();
-                    uniques = testData.DistinctBy(x => x.Date).DistinctBy(c => c.Location).ToList();
-
                     string path = @"..\..\..\..\TempFuktData.csv";
                     using (StreamReader sr = new StreamReader(path))
                     {
