@@ -17,6 +17,8 @@ namespace UltraMonkeyLibrary
         {
             uniques = new List<WeatherData>();
         }
+
+
         public async Task WriteToDb()
         {
             using (var context = new UltraMonkeyContext())
@@ -63,7 +65,6 @@ namespace UltraMonkeyLibrary
         }
 
         
-
         /*
          lägger till data i kolumnerna opentime & diff
 
@@ -99,10 +100,9 @@ namespace UltraMonkeyLibrary
             }
         }
 
-
-
         /* Vi har använta oss utav två nästlade for loopar då vi ansåg att använda oss utav en kompositnyckel för att sortera
-        ut databasen dels tog på tog för lång tid(10 sekunder mot 3-4 minuter(om man har en processor med 16 kärnor :=)  )), dels så var resultaten snarlika i med hur många resultat
+        ut databasen dels tog på tog för lång tid(10 sekunder mot 3-4 minuter(om man har en processor med 16 kärnor :=)  ))
+        , dels så var resultaten snarlika i med hur många resultat
         som försvann mellan de olika resultaten(cirka 139000 för kompositnyckel och cirka 140311 på det sätt vi gör nu).
          */
         private void RemoveDuplicates()
@@ -198,7 +198,6 @@ namespace UltraMonkeyLibrary
         }
 
        
-         
         /// <summary>
         /// Konverterar strängen till en float med rätt kultur
         /// </summary>
@@ -209,7 +208,6 @@ namespace UltraMonkeyLibrary
             float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
             return result;
         }
-
 
 
         private int CalculateMoldIndex(float temp, int humidity)
