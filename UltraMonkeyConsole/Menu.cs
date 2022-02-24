@@ -98,28 +98,16 @@ namespace UltraMonkeyConsole
         }
         string AVGtemp(string locationPlace, string date)
         {
-            //Ask for Date 
-            //Console.WriteLine("Input a date(MM-DD): ");
             var input = DateOnly.Parse(date);
             string output = "";
-
-            //Search for date in database
             using (var dbcontext = new UltraMonkeyContext())
             {
                 var searcher = from d in dbcontext.WeatherDatas
                                where d.Date.Day == input.Day && d.Date.Month == input.Month && d.Location == locationPlace
-                               group d by new
-                               {
-                                   d.Date.Date,
-                                   d.Location
-                               } into g
+                               group d by new { d.Date.Date, d.Location }
+                               into g
                                select new
-                               {
-                                   Date = g.Key.Date,
-                                   Temp = g.Average(x => x.Temp),
-                                   Loc = g.Key.Location,
-                               };
-
+                               { Date = g.Key.Date, Temp = g.Average(x => x.Temp), Loc = g.Key.Location };
                 foreach (var a in searcher)
                 {
                     output = $"{a.Date.Year}-{a.Date.Month}-{a.Date.Day} {Math.Round(a.Temp, 1)} {a.Loc} ";
@@ -133,9 +121,7 @@ namespace UltraMonkeyConsole
             Console.Title = "VäderData";
             WriteDataToDb write = new WriteDataToDb();
             await write.WriteToDb();
-
             bool loop = true;
-
             List<string> dateList = new List<string>();
             while (loop)
             {
@@ -143,36 +129,28 @@ namespace UltraMonkeyConsole
                 string menu = MenuChoices();
                 switch (menu[0])
                 {
-                    //Klar
                     case '1':
                         await AvgTempChoice();
                         break;
-                    //Klar
                     case '2':
                         await HotOrColdDay();
                         break;
-                    //Klar
                     case '3':
                         await HighestOrLowestAirMoisture();
                         break;
-
                     case '4':
                         await HighestOrLowestMoldRisk();
                         break;
-
                     case '5':
                         await DateForAutumn();
                         break;
-
-                    case '6': //Metrologisk vinter
+                    case '6': 
                         await DateForWinter();
                         break;
-
-                    case '7': //Öppettider för balkonger
+                    case '7': 
                         await BalconyOpenTime();
                         break;
-
-                    case '8': //Tempskillnader
+                    case '8': 
                         await BalconyTempDifference();
                         break;
                     case 'Q':
@@ -197,14 +175,14 @@ namespace UltraMonkeyConsole
             {
                 diffList = await openTime.OrderByDiffAsc(diffList);
             }
-            SpectreMenu(diffList, "Balcony Difference");
+            SpectreMenu(diffList, "Balcony difference for outside and inside");
         }
 
         private async Task BalconyOpenTime()
         {
             List<string> openList = new List<string>();
             openList = await openTime.OrderByTime(openList);
-            SpectreMenu(openList, "Balcony opentime by minutes");
+            SpectreMenu(openList, "Balcony opentime by minutes per day");
         }
 
         private async Task DateForWinter()
@@ -277,6 +255,12 @@ namespace UltraMonkeyConsole
                                     }));
         }
 
+        /// <summary>
+        /// Grupperar efter dagar och plats
+        /// </summary>
+        /// <param name="roomType"></param>
+        /// <param name="temp"></param>
+        /// <returns></returns>
         async Task<List<string>> Dates(string roomType, List<string> temp)
         {
             using (var context = new UltraMonkeyContext())

@@ -31,7 +31,7 @@ namespace UltraMonkeyLibrary
                     {
                         string headerLine = sr.ReadLine();
                         string line;
-                        line = await WriteToClass(sr);
+                        line = await FilterAndWriteToClass(sr);
                         RemoveDuplicates();
                         AddOpenTime();
                     }
@@ -40,13 +40,18 @@ namespace UltraMonkeyLibrary
                 else
                 {
                     Console.WriteLine("Database already exists");
-                    await Task.Delay(1000);
+                    await Task.Delay(2000);
                 }
             }
-
         }
 
-        private async Task<string> WriteToClass(StreamReader sr)
+
+        /// <summary>
+        /// Filtrerar bort dåliga tecken och läser in datan till en klass
+        /// </summary>
+        /// <param name="sr"></param>
+        /// <returns></returns>
+        private async Task<string> FilterAndWriteToClass(StreamReader sr)
         {
             string line;
             while ((line = sr.ReadLine()) != null)
@@ -57,11 +62,21 @@ namespace UltraMonkeyLibrary
                 float res = CheckForBadCharacters(splitedLine);
                 await AddToClass(uniques, splitedLine, res);
             }
-
             return line;
         }
 
-        //lägger till öppettiderna i listan
+        
+
+        /*
+         lägger till data i kolumnerna opentime & diff
+
+        om nästkommande element har samma plats dvs om det är ute,ute eller inne,inne hoppar den över en rad
+        annars kommer den jämföra nuvarande plats och nuvarande plats + 1  med elementen på plats 30 och 31
+        alltså om datan är helt korrekt(vilket den inte är) så kommer den lägga till vid +15 minuter. 
+        Vi ansåg att vi trots det kommer nära nog med denna lösning istället för att jämföra minut för minut.
+        När vi jämförde minut för minut blev variationerna så pass små att det var svårt att se några skillnader om några alls,
+        vi valde därför denna lösning
+         */
         private void AddOpenTime()
         {
             for (int i = 0; i + 31 < uniques.Count; i += 30)
@@ -87,9 +102,20 @@ namespace UltraMonkeyLibrary
             }
         }
 
+
+
+        /* Vi har använta oss utav två nästlade for loopar då vi ansåg att använda oss utav en kompositnyckel för att sortera
+        ut databasen dels tog på tog för lång tid(10 sekunder mot 3-4 minuter), dels så var resultaten snarlika i med hur många resultat
+        som försvann mellan de olika resultaten(cirka 139000 för kompositnyckel och cirka 140311 på det sätt vi gör nu).
+         */
         private void RemoveDuplicates()
         {
+            /*
+             I den första for loopen här kollar vi igenom om alla properties i de nästkommande raderna är likadana som i,
+            om de är det så tas j bort från listan
 
+            Om de har olika tid så bryts den inre loopen
+             */
             for (int i = 0; i < uniques.Count; i++)
             {
                 for (int j = i + 1; j < uniques.Count; j++)
@@ -102,6 +128,15 @@ namespace UltraMonkeyLibrary
                         break;
                 }
             }
+
+
+            /*
+             Vi valde även att inkludera en till nästlad for loop för att rensa ut om det finns inläsningar som har samma
+            plats och tid
+
+            Det hade eventuellt gått att lägga den här koden i den första for loopen, men körtiden var så pass låg att vi ansåg
+            att det inte gjorde någonting.
+             */
 
             for (int i = 0; i < uniques.Count; i++)
             {
@@ -133,8 +168,6 @@ namespace UltraMonkeyLibrary
             }
         }
 
-
-
         //skriv alla data till en fil
         //bara testad med .csv filer
         private void AddToFile(List<WeatherData> uniques, string pathTest)
@@ -145,6 +178,7 @@ namespace UltraMonkeyLibrary
                 csv.WriteRecords(uniques);
             }
         }
+
 
         private async Task AddToClass(List<WeatherData> uniques, string[] splitedLine, float res)
         {
@@ -167,6 +201,12 @@ namespace UltraMonkeyLibrary
         }
 
        
+         
+        /// <summary>
+        /// Konverterar strängen till en float med rätt kultur
+        /// </summary>
+        /// <param name="splitedLine"></param>
+        /// <returns></returns>
         private float CheckForBadCharacters(string[] splitedLine)
         {
             float.TryParse(splitedLine[2], System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float result);

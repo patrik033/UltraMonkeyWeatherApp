@@ -9,7 +9,12 @@ namespace UltraMonkeyLibrary
 {
     public class Temps : Types
     {
-
+        /// <summary>
+        /// Skickar tillbaka ett resultat sorterat på parameter och plats
+        /// </summary>
+        /// <param name="orderBy"></param>
+        /// <param name="roomType"></param>
+        /// <returns></returns>
         public override async Task<List<string>> ReturnResult(bool orderBy, string roomType)
         {
             List<string> temp = new List<string>();

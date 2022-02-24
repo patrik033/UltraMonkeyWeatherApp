@@ -38,6 +38,11 @@ namespace UltraMonkeyLibrary
             return await Task.FromResult(res);
         }
 
+        /// <summary>
+        /// Skickar tillbaka en lista innehållandes 5 element där temperaturen är större än 0 och mindre än 10,
+        /// dvs det första elementet i den listan är det som är första höstdagen
+        /// </summary>
+        /// <returns></returns>
         private async Task<List<WeatherData>> Autumn()
         {
             List<WeatherData> autumnList = new List<WeatherData>();
@@ -65,7 +70,11 @@ namespace UltraMonkeyLibrary
             };
         }
 
-
+        /// <summary>
+        /// /// Skickar tillbaka en lista innehållandes 5 element där temperaturen är mindre än 0,
+        /// dvs det första elementet i den listan är det som är första vinterdagen
+        /// </summary>
+        /// <returns></returns>
         private async Task<List<WeatherData>> Winter()
         {
             List<WeatherData> winterList = new List<WeatherData>();

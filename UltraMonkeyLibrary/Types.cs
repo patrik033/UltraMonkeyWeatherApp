@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace UltraMonkeyLibrary
 {
+
     public abstract class Types
     {
         public abstract Task<List<string>> ReturnResult(bool orderBy, string roomType);
